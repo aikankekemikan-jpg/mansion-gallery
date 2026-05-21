@@ -1,0 +1,2564 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>THE GRAND RESIDENCE — Digital Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Noto+Serif+JP:wght@300;400;500&family=Noto+Sans+JP:wght@300;400&family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+:root{
+  --gold:#C8B89A;--gold-l:#E2D4BE;--gold-d:#9A8060;--gold-dim:rgba(200,184,154,.1);
+  /* ダークグレーパレット（真っ黒→チャコールグレーに）*/
+  --black:#1C1C1E;   /* メイン背景：iOS系のチャコール */
+  --d1:#232325;      /* やや明るい背景 */
+  --d2:#2C2C2E;      /* カード背景 */
+  --d3:#363638;      /* ホバー・アクティブ */
+  --d4:#48484A;      /* ボーダー・スライダー */
+  /* テキスト：コントラスト強化 */
+  --gray:#9A9A9E;    /* サブテキスト（より明るく）*/
+  --gray-l:#D1D1D6;  /* 本文テキスト（より読みやすく）*/
+  --white:#F5F5F7;   /* 見出し（Apple風オフホワイト）*/
+  --red:#E05555;--blue:#6B9FE4;--green:#6BAE8C;
+  --nav-h:60px;--bot-h:66px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--black);color:var(--white);font-family:'Noto Sans JP',sans-serif;font-weight:300;overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:var(--d1)}::-webkit-scrollbar-thumb{background:var(--gold-d)}
+
+/* ══ HEADER ══ */
+.hdr{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav-h);background:rgba(28,28,30,.96);backdrop-filter:blur(20px);border-bottom:1px solid rgba(200,184,154,.15);display:flex;align-items:center;justify-content:space-between;padding:0 18px;}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;background:none;border:none;}
+.logo-emblem{position:relative;width:34px;height:34px;flex-shrink:0;}
+.logo-emblem svg{width:100%;height:100%;}
+.logo-text{line-height:1.2;text-align:left;}
+.logo-text-main{font-family:'Cinzel',serif;font-size:12.5px;letter-spacing:.28em;color:var(--gold);display:block;}
+.logo-text-sub{font-size:7px;letter-spacing:.55em;color:rgba(200,184,154,.45);text-transform:uppercase;display:block;margin-top:1px;}
+.hdr-right{display:flex;align-items:center;gap:10px;}
+.hdr-tel{font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--gold-l);text-decoration:none;text-align:right;line-height:1.2;}
+.hdr-tel small{display:block;font-size:7.5px;color:var(--gray);letter-spacing:.2em;}
+.hdr-admin-btn{background:none;border:1px solid rgba(200,184,154,.22);color:var(--gray);font-size:9px;letter-spacing:.15em;padding:5px 10px;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif;transition:all .2s;white-space:nowrap;}
+.hdr-admin-btn:hover{border-color:var(--gold);color:var(--gold);}
+.hdr-admin-btn.on{background:rgba(200,184,154,.12);border-color:var(--gold);color:var(--gold);}
+
+/* ══ BOTTOM NAV ══ */
+.bot-nav{position:fixed;bottom:0;left:0;right:0;z-index:300;height:var(--bot-h);background:rgba(28,28,30,.98);backdrop-filter:blur(20px);border-top:1px solid rgba(200,184,154,.1);display:flex;}
+.bot-btn{flex:1;background:none;border:none;color:var(--gray);font-family:'Noto Sans JP',sans-serif;font-size:7.5px;letter-spacing:.04em;padding:8px 2px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:color .2s;position:relative;}
+.bot-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s;}
+.bot-btn::after{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:var(--gold);transform:scaleX(0);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.bot-btn.on{color:var(--gold);}.bot-btn.on::after{transform:scaleX(1);}
+.bot-btn.hidden{display:none;}
+
+/* ══ MAIN ══ */
+.main{padding-top:var(--nav-h);padding-bottom:var(--bot-h);min-height:100vh;}
+.sec{display:none;animation:fadeUp .38s ease both;}.sec.on{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* ══ SHARED ══ */
+.pg-head{padding:26px 20px 18px;}
+.pg-head-en{font-family:'Cinzel',serif;font-size:8.5px;letter-spacing:.6em;color:var(--gold);text-transform:uppercase;margin-bottom:5px;}
+.pg-head-jp{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:.05em;color:var(--white);}
+.gold-rule{height:1px;margin:0 20px 22px;background:linear-gradient(to right,var(--gold),rgba(200,184,154,.08));opacity:.55;}
+
+/* ══ HERO ══ */
+.hero{position:relative;height:calc(100svh - var(--nav-h));overflow:hidden;display:flex;align-items:flex-end;}
+.hero-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1400&q=85') center/cover no-repeat;}
+.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(165deg,rgba(20,20,22,.05) 0%,rgba(20,20,22,.6) 55%,rgba(20,20,22,.92) 100%);}
+.hero-body{position:relative;padding:0 22px 38px;width:100%;}
+.hero-kicker{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.6em;color:var(--gold);text-transform:uppercase;margin-bottom:13px;display:flex;align-items:center;gap:10px;}
+.hero-kicker::before{content:'';width:26px;height:1px;background:var(--gold);}
+.hero-ttl{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,9.5vw,68px);font-weight:300;line-height:1.05;letter-spacing:.04em;color:var(--white);margin-bottom:6px;}
+.hero-ttl em{color:var(--gold);font-style:normal;font-weight:400;}
+.hero-addr{font-size:11px;color:var(--gray-l);letter-spacing:.18em;margin-bottom:26px;}
+.hero-stats{display:flex;gap:22px;}
+.hs-item{display:flex;flex-direction:column;gap:2px;}
+.hs-num{font-family:'Cormorant Garamond',serif;font-size:25px;font-weight:400;color:var(--gold);letter-spacing:.04em;}
+.hs-lbl{font-size:8.5px;color:var(--gray);letter-spacing:.2em;}
+.hero-cta{position:absolute;right:18px;bottom:38px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.hero-cta span{font-size:7px;letter-spacing:.38em;color:var(--gray);writing-mode:vertical-rl;text-transform:uppercase;}
+.hero-cta-line{width:1px;height:42px;background:linear-gradient(to bottom,var(--gold),transparent);animation:linePulse 2.4s ease-in-out infinite;}
+@keyframes linePulse{0%,100%{opacity:.2}50%{opacity:.9}}
+
+/* 顧客ウェルカムバナー */
+.client-banner{margin:0 20px 0;padding:14px 18px;background:linear-gradient(135deg,rgba(200,184,154,.1),rgba(200,184,154,.04));border:1px solid rgba(200,184,154,.2);border-radius:3px;}
+.client-banner-name{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--white);letter-spacing:.04em;margin-bottom:3px;}
+.client-banner-name em{color:var(--gold);font-style:normal;}
+.client-banner-staff{font-size:10.5px;color:var(--gray);letter-spacing:.1em;}
+
+/* TOP */
+.announce{background:linear-gradient(135deg,#8A7458 0%,var(--gold) 100%);padding:11px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.announce-txt{font-size:11px;color:var(--black);font-weight:700;letter-spacing:.1em;line-height:1.5;}
+.announce-badge{background:var(--black);color:var(--gold);font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;padding:4px 10px;white-space:nowrap;flex-shrink:0;}
+.top-menu{padding:24px 20px 8px;}
+.top-menu-title{font-family:'Cinzel',serif;font-size:8.5px;letter-spacing:.6em;color:rgba(200,184,154,.4);text-transform:uppercase;margin-bottom:13px;}
+.top-cards{display:flex;flex-direction:column;gap:1.5px;}
+.top-card{background:var(--d2);border:none;border-left:2px solid var(--gold);padding:14px 17px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .18s;width:100%;}
+.top-card:hover{background:var(--d3);}
+.top-card-en{font-family:'Cinzel',serif;font-size:8.5px;color:var(--gold);letter-spacing:.42em;margin-bottom:3px;}
+.top-card-jp{font-family:'Noto Serif JP',serif;font-size:12.5px;color:var(--white);letter-spacing:.1em;}
+.top-card-arr{color:rgba(200,184,154,.45);font-size:18px;flex-shrink:0;}
+.top-card.hidden{display:none;}
+
+/* GALLERY */
+.gal-tabs{display:flex;padding:0 20px 14px;gap:0;overflow-x:auto;scrollbar-width:none;}
+.gal-tabs::-webkit-scrollbar{display:none;}
+.gal-tab{background:none;border:1px solid rgba(200,184,154,.18);color:var(--gray);font-size:10px;padding:7px 15px;cursor:pointer;white-space:nowrap;letter-spacing:.1em;transition:all .2s;}
+.gal-tab+.gal-tab{border-left:none;}.gal-tab:first-child{border-radius:2px 0 0 2px;}.gal-tab:last-child{border-radius:0 2px 2px 0;}
+.gal-tab.on{background:var(--gold);border-color:var(--gold);color:var(--black);}
+.gal-viewer{position:relative;margin:0 20px;border-radius:3px;overflow:hidden;aspect-ratio:4/3;background:var(--d2);}
+.gal-main{width:100%;height:100%;object-fit:cover;transition:transform .7s ease;}
+.gal-viewer:hover .gal-main{transform:scale(1.03);}
+.gal-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55) 0%,transparent 45%);}
+.gal-cap{position:absolute;bottom:13px;left:13px;right:13px;}
+.gal-cap-ttl{font-family:'Noto Serif JP',serif;font-size:13px;color:var(--white);letter-spacing:.1em;}
+.gal-cap-sub{font-size:9px;color:var(--gray-l);margin-top:2px;letter-spacing:.1em;}
+.gal-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);backdrop-filter:blur(4px);border:1px solid rgba(200,184,154,.25);color:var(--gold);width:36px;height:36px;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+.gal-btn:hover{background:var(--gold);color:var(--black);}.gal-prev{left:9px;}.gal-next{right:9px;}
+.gal-cnt{position:absolute;top:9px;right:9px;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);border:1px solid rgba(200,184,154,.18);font-family:'Cormorant Garamond',serif;font-size:12px;color:var(--gold);padding:2px 8px;letter-spacing:.1em;}
+.gal-thumbs{display:flex;gap:6px;padding:9px 20px 0;overflow-x:auto;scrollbar-width:none;}
+.gal-thumbs::-webkit-scrollbar{display:none;}
+.gal-th{flex-shrink:0;width:64px;height:48px;border-radius:2px;overflow:hidden;cursor:pointer;opacity:.45;border:2px solid transparent;transition:all .2s;}
+.gal-th.on{opacity:1;border-color:var(--gold);}
+.gal-th img{width:100%;height:100%;object-fit:cover;}
+
+/* VIDEO */
+.vid-list{display:flex;flex-direction:column;gap:14px;padding:0 20px;}
+.vid-card{background:var(--d3);border:1px solid rgba(255,255,255,.12);border-radius:3px;overflow:hidden;}
+.vid-thumb{position:relative;aspect-ratio:16/9;background:var(--d3);cursor:pointer;overflow:hidden;}
+.vid-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .5s;}
+.vid-thumb:hover img{transform:scale(1.04);}
+.vid-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.vid-play-btn{width:50px;height:50px;border-radius:50%;background:rgba(200,184,154,.88);border:2px solid var(--gold-l);display:flex;align-items:center;justify-content:center;transition:transform .2s;}
+.vid-thumb:hover .vid-play-btn{transform:scale(1.1);}
+.vid-play-ico{width:0;height:0;margin-left:4px;border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:17px solid var(--black);}
+.vid-info{padding:13px 15px;}
+.vid-ttl{font-family:'Noto Serif JP',serif;font-size:13px;color:var(--white);letter-spacing:.08em;margin-bottom:4px;}
+.vid-meta{font-size:10px;color:var(--gray);letter-spacing:.1em;}
+.vid-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(20,20,22,.97);flex-direction:column;align-items:center;justify-content:center;padding:18px;}
+.vid-modal.on{display:flex;animation:fadeUp .3s ease;}
+.vid-modal-inner{position:relative;width:100%;max-width:640px;}
+.vid-modal-frame{aspect-ratio:16/9;width:100%;border:none;background:#000;}
+.vid-modal-close{position:absolute;top:-38px;right:0;background:none;border:1px solid rgba(200,184,154,.28);color:var(--gold);width:30px;height:30px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* FLOOR PLAN */
+.fp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;padding:0 20px;}
+.fp-card{background:var(--d2);border:1px solid rgba(255,255,255,.08);border-radius:3px;overflow:hidden;cursor:pointer;transition:border-color .25s,transform .25s;position:relative;}
+.fp-card:hover{border-color:rgba(200,184,154,.4);transform:translateY(-2px);}
+.fp-card.wide{grid-column:1/-1;}
+.fp-card.compare-selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
+.fp-svg-wrap{background:#F5F4EE;display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;overflow:hidden;}
+.fp-svg-wrap svg{width:100%;height:auto;}
+.fp-info{padding:10px 12px;}
+.fp-type{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:500;color:var(--gold);letter-spacing:.04em;}
+.fp-meta{display:flex;gap:9px;margin-top:3px;}
+.fp-meta-item{font-size:9.5px;color:var(--gray-l);letter-spacing:.06em;}
+.fp-price{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--white);margin-top:4px;letter-spacing:.04em;}
+.fp-price small{font-size:9.5px;color:var(--gray);margin-left:3px;}
+.fp-badge{position:absolute;top:7px;left:7px;background:var(--gold);color:var(--black);font-family:'Cinzel',serif;font-size:7.5px;font-weight:600;padding:2px 7px;letter-spacing:.22em;}
+
+/* ══ 販売状況表 ══ */
+.fp-page-tabs{
+  display:flex;gap:0;padding:0 20px 16px;
+}
+.fp-page-tab{
+  flex:1;background:none;border:1px solid rgba(200,184,154,.18);
+  color:var(--gray);font-family:'Noto Sans JP',sans-serif;
+  font-size:10px;letter-spacing:.08em;padding:10px 8px 9px;
+  cursor:pointer;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+}
+.fp-page-tab svg{width:18px;height:18px;stroke:currentColor;transition:stroke .2s;}
+.fp-page-tab:first-child{border-radius:2px 0 0 2px;}
+.fp-page-tab:last-child{border-radius:0 2px 2px 0;border-left:none;}
+.fp-page-tab.on{background:var(--gold);border-color:var(--gold);color:var(--black);}
+.fp-page-tab.on svg{stroke:var(--black);}
+
+.status-filters{padding:0 20px 10px;display:flex;flex-direction:column;gap:6px;}
+.status-filter-group{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;}
+.status-filter-group::-webkit-scrollbar{display:none;}
+.status-filter-btn,.status-type-btn{
+  background:none;border:1px solid rgba(255,255,255,.1);
+  color:var(--gray);font-size:9.5px;padding:5px 12px;
+  cursor:pointer;white-space:nowrap;border-radius:20px;
+  letter-spacing:.08em;transition:all .2s;
+  font-family:'Noto Sans JP',sans-serif;flex-shrink:0;
+}
+.status-filter-btn.on,.status-type-btn.on{background:var(--d3);border-color:rgba(255,255,255,.25);color:var(--white);}
+.status-filter-btn.avail.on{background:rgba(107,174,140,.15);border-color:var(--green);color:var(--green);}
+.status-filter-btn.reserved.on{background:rgba(107,159,228,.12);border-color:var(--blue);color:var(--blue);}
+.status-filter-btn.sold.on{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.2);color:var(--gray-l);}
+
+.status-legend{
+  display:flex;gap:14px;padding:0 20px 10px;
+  align-items:center;
+}
+.status-legend-item{display:flex;align-items:center;gap:5px;font-size:9.5px;color:var(--gray);letter-spacing:.06em;}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.status-dot.avail{background:var(--green);}
+.status-dot.reserved{background:var(--blue);}
+.status-dot.sold{background:var(--d4);border:1px solid rgba(255,255,255,.15);}
+
+.status-table-wrap{
+  overflow-x:auto;padding:0 20px;
+  scrollbar-width:thin;scrollbar-color:var(--gold-d) var(--d1);
+}
+.status-table{
+  border-collapse:separate;border-spacing:2px;
+  min-width:320px;width:100%;
+}
+/* ヘッダー行 */
+.status-table thead th{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.25em;
+  color:var(--gold);font-weight:400;padding:6px 4px;
+  text-align:center;white-space:nowrap;
+  background:var(--d1);position:sticky;top:0;z-index:1;
+}
+.status-table thead th.floor-head{
+  width:42px;min-width:42px;
+  background:var(--d1);
+}
+/* 階ラベル列 */
+.status-floor-label{
+  font-family:'Cormorant Garamond',serif;font-size:14px;
+  color:var(--gray);letter-spacing:.04em;
+  text-align:center;padding:4px 2px;
+  background:var(--d1);position:sticky;left:0;z-index:1;
+  white-space:nowrap;
+}
+.status-floor-label span{font-size:9px;color:var(--gray);margin-left:1px;}
+/* 住戸セル */
+.status-cell{
+  padding:3px 2px;vertical-align:top;
+}
+.status-unit{
+  background:var(--d2);border-radius:3px;
+  padding:7px 6px 6px;cursor:pointer;
+  transition:transform .15s,border-color .15s;
+  border:1px solid rgba(255,255,255,.04);
+  min-width:80px;
+}
+.status-unit:hover{transform:translateY(-1px);border-color:rgba(200,184,154,.3);}
+.status-unit.sold{background:var(--d1);border-color:rgba(255,255,255,.03);cursor:default;}
+.status-unit.sold:hover{transform:none;}
+.status-unit.reserved{border-color:rgba(107,159,228,.25);}
+.status-unit-no{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.15em;
+  color:var(--gray);margin-bottom:3px;
+}
+.status-unit-type{
+  font-family:'Cormorant Garamond',serif;font-size:14px;
+  font-weight:500;letter-spacing:.04em;color:var(--white);
+  line-height:1;margin-bottom:2px;
+}
+.status-unit.sold .status-unit-type{color:var(--gray);}
+.status-unit-area{font-size:8.5px;color:var(--gray);margin-bottom:4px;letter-spacing:.04em;}
+.status-unit-price{
+  font-family:'Cormorant Garamond',serif;font-size:12px;
+  color:var(--gold);letter-spacing:.03em;
+}
+.status-unit.sold .status-unit-price{color:var(--gray);opacity:.5;}
+.status-unit-badge{
+  display:inline-block;font-family:'Cinzel',serif;font-size:7px;
+  padding:1px 5px;border-radius:1px;letter-spacing:.12em;
+  margin-top:4px;
+}
+.status-unit-badge.avail{background:rgba(107,174,140,.15);border:1px solid var(--green);color:var(--green);}
+.status-unit-badge.reserved{background:rgba(107,159,228,.1);border:1px solid var(--blue);color:var(--blue);}
+.status-unit-badge.sold{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--gray);}
+.status-unit-hidden{opacity:0;pointer-events:none;}
+
+/* サマリー */
+.status-summary{
+  display:flex;gap:1px;padding:12px 20px 0;
+}
+.status-summary-item{
+  flex:1;background:var(--d2);padding:10px 8px;text-align:center;
+}
+.status-summary-num{
+  font-family:'Cormorant Garamond',serif;font-size:22px;
+  color:var(--gold);letter-spacing:.04em;
+}
+.status-summary-label{font-size:8px;color:var(--gray);letter-spacing:.12em;margin-top:2px;}
+
+/* 住戸詳細モーダル */
+.unit-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.88);align-items:flex-end;justify-content:center;}
+.unit-modal.on{display:flex;animation:fadeUp .28s ease;}
+.unit-modal-inner{
+  background:var(--d2);border:1px solid rgba(200,184,154,.22);
+  border-bottom:none;border-radius:8px 8px 0 0;
+  padding:20px 20px 32px;width:100%;max-width:480px;
+}
+.unit-modal-handle{width:36px;height:3px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 16px;}
+.unit-modal-no{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.4em;color:var(--gold);margin-bottom:4px;}
+.unit-modal-type{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--white);letter-spacing:.04em;margin-bottom:12px;}
+.unit-modal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;margin-bottom:14px;}
+.unit-modal-row{background:var(--d2);padding:10px 12px;}
+.unit-modal-row-lbl{font-size:8px;color:var(--gray);letter-spacing:.18em;margin-bottom:3px;}
+.unit-modal-row-val{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--white);letter-spacing:.04em;}
+.unit-modal-row-val.gold{color:var(--gold);}
+.unit-modal-actions{display:flex;gap:6px;}
+.unit-modal-btn-loan{
+  flex:1;background:var(--gold);border:none;color:var(--black);
+  font-family:'Noto Serif JP',serif;font-size:12px;font-weight:500;
+  letter-spacing:.18em;padding:14px;cursor:pointer;border-radius:2px;transition:background .2s;
+}
+.unit-modal-btn-loan:hover{background:var(--gold-l);}
+.unit-modal-btn-close{
+  background:none;border:1px solid rgba(255,255,255,.1);color:var(--gray);
+  font-size:11px;padding:14px 16px;cursor:pointer;border-radius:2px;
+  font-family:'Noto Sans JP',sans-serif;letter-spacing:.1em;transition:all .2s;
+}
+
+/* 比較モードバー */
+.fp-compare-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;margin-bottom:4px;
+  background:rgba(200,184,154,.06);border-bottom:1px solid rgba(200,184,154,.12);
+}
+.fp-compare-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;}
+.fp-compare-toggle{
+  background:none;border:1px solid rgba(200,184,154,.3);color:var(--gold);
+  font-size:9.5px;padding:5px 12px;cursor:pointer;border-radius:2px;letter-spacing:.1em;
+  font-family:'Noto Sans JP',sans-serif;transition:all .2s;
+}
+.fp-compare-toggle.on{background:var(--gold);color:var(--black);}
+/* 比較モーダル */
+.fp-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(20,20,22,.96);flex-direction:column;align-items:center;justify-content:center;padding:14px;overflow-y:auto;}
+.fp-modal.on{display:flex;animation:fadeUp .3s ease;}
+.fp-modal-inner{max-width:480px;width:100%;}
+.fp-modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;padding:0 2px;}
+.fp-modal-ttl{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--gold);letter-spacing:.08em;}
+.fp-modal-close{background:none;border:1px solid rgba(200,184,154,.28);color:var(--gold);width:32px;height:32px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+/* ズーム対応SVGラッパー */
+.fp-modal-svg{background:#F5F4EE;border-radius:3px;aspect-ratio:4/3;overflow:hidden;margin-bottom:11px;display:flex;align-items:center;justify-content:center;position:relative;cursor:zoom-in;}
+.fp-modal-svg.zoomed{cursor:zoom-out;aspect-ratio:unset;height:60vw;max-height:420px;}
+.fp-modal-svg svg{width:100%;height:auto;transition:transform .3s ease;transform-origin:center center;}
+.fp-modal-svg.zoomed svg{width:200%;height:auto;}
+.fp-zoom-hint{position:absolute;bottom:6px;right:8px;font-size:8.5px;color:#9A8060;letter-spacing:.12em;background:rgba(245,244,238,.85);padding:2px 7px;border-radius:1px;}
+.fp-specs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;margin-bottom:13px;}
+.fp-spec{background:var(--d2);padding:10px 7px;text-align:center;}
+.fp-spec-lbl{font-size:8px;color:var(--gray);letter-spacing:.18em;margin-bottom:3px;}
+.fp-spec-val{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold);letter-spacing:.04em;}
+.fp-spec-unit{font-size:9px;color:var(--gray-l);}
+/* 比較モーダル（2プラン並列） */
+.fp-cmp-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(20,20,22,.98);flex-direction:column;padding:0;overflow-y:auto;}
+.fp-cmp-modal.on{display:flex;animation:fadeUp .3s ease;}
+.fp-cmp-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 12px;border-bottom:1px solid rgba(200,184,154,.15);
+  flex-shrink:0;
+}
+.fp-cmp-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);letter-spacing:.08em;}
+.fp-cmp-close{background:none;border:1px solid rgba(200,184,154,.28);color:var(--gold);width:32px;height:32px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.fp-cmp-body{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.06);flex:1;}
+.fp-cmp-col{background:var(--d1);display:flex;flex-direction:column;}
+.fp-cmp-col-head{
+  padding:10px 12px 8px;border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.fp-cmp-col-type{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--gold);letter-spacing:.05em;}
+.fp-cmp-zoom-btn{
+  background:none;border:1px solid rgba(200,184,154,.22);color:var(--gold);
+  font-size:11px;width:28px;height:28px;cursor:pointer;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+}
+.fp-cmp-svg-wrap{
+  background:#F5F4EE;flex:1;min-height:180px;max-height:240px;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;cursor:zoom-in;
+}
+.fp-cmp-svg-wrap.zoomed{cursor:zoom-out;max-height:unset;height:50vw;}
+.fp-cmp-svg-wrap svg{width:100%;height:auto;transition:transform .3s;transform-origin:center;}
+.fp-cmp-svg-wrap.zoomed svg{width:200%;}
+.fp-cmp-specs{padding:8px 10px;display:flex;flex-direction:column;gap:1px;}
+.fp-cmp-spec-row{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);
+}
+.fp-cmp-spec-row:last-child{border-bottom:none;}
+.fp-cmp-spec-lbl{font-size:8.5px;color:var(--gray);letter-spacing:.12em;}
+.fp-cmp-spec-val{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--white);letter-spacing:.04em;}
+.fp-cmp-cta{
+  padding:10px 12px;display:flex;flex-direction:column;gap:6px;
+  border-top:1px solid rgba(255,255,255,.05);
+}
+.fp-cmp-btn-loan{
+  width:100%;background:rgba(200,184,154,.12);border:1px solid rgba(200,184,154,.3);
+  color:var(--gold);font-size:10px;letter-spacing:.12em;padding:9px;cursor:pointer;
+  border-radius:2px;font-family:'Noto Sans JP',sans-serif;transition:all .2s;
+}
+.fp-cmp-btn-loan:hover{background:rgba(200,184,154,.22);}
+
+/* PRICE */
+.price-filter{display:flex;gap:5px;padding:0 20px 14px;overflow-x:auto;scrollbar-width:none;}
+.price-filter::-webkit-scrollbar{display:none;}
+.pf-btn{background:none;border:1px solid rgba(200,184,154,.18);color:var(--gray);font-size:9.5px;padding:6px 13px;cursor:pointer;white-space:nowrap;border-radius:20px;letter-spacing:.1em;transition:all .2s;}
+.pf-btn.on{background:var(--gold);border-color:var(--gold);color:var(--black);}
+.price-tbl-wrap{overflow-x:auto;padding:0 20px;}
+.price-tbl{width:100%;border-collapse:collapse;min-width:540px;}
+.price-tbl thead tr{border-bottom:1px solid rgba(200,184,154,.25);}
+.price-tbl th{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.32em;color:var(--gold);padding:9px 9px;white-space:nowrap;text-align:left;font-weight:400;}
+.price-tbl tbody tr{border-bottom:1px solid rgba(255,255,255,.07);transition:background .15s;}
+.price-tbl tbody tr:hover{background:var(--d2);}
+.price-tbl td{padding:10px 9px;font-size:11px;color:var(--gray-l);white-space:nowrap;}
+.price-tbl td.num{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--white);letter-spacing:.04em;}
+.price-tbl td.gold{color:var(--gold);}
+.p-status{display:inline-block;font-size:8.5px;padding:2px 7px;border-radius:1px;font-family:'Cinzel',serif;letter-spacing:.15em;}
+.p-status.avail{background:rgba(107,174,140,.12);border:1px solid var(--green);color:var(--green);}
+.p-status.sold{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.13);color:var(--gray);}
+.p-status.reserved{background:rgba(107,159,228,.1);border:1px solid rgba(107,159,228,.3);color:var(--blue);}
+.price-note{padding:12px 20px 0;font-size:9px;color:var(--gray);letter-spacing:.05em;line-height:1.85;}
+
+/* MAP */
+#mapEl{height:290px;margin:0 20px;border-radius:3px;overflow:hidden;}
+.map-spots{padding:14px 20px 0;display:flex;flex-direction:column;gap:2px;}
+.map-cat{margin-bottom:11px;}
+.map-cat-ttl{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.42em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:10px;}
+.map-cat-ttl::after{content:'';flex:1;height:1px;background:rgba(200,184,154,.15);}
+.map-spot-list{display:flex;flex-direction:column;gap:1px;}
+.map-spot{background:var(--d2);padding:9px 13px;display:flex;align-items:center;justify-content:space-between;border-radius:2px;}
+.map-spot-name{font-size:11.5px;color:var(--gray-l);letter-spacing:.05em;}
+.map-spot-dist{font-family:'Cormorant Garamond',serif;font-size:12px;color:var(--gold);letter-spacing:.04em;}
+
+/* OVERVIEW */
+.ov-banner{position:relative;height:170px;margin:0 20px;border-radius:3px;overflow:hidden;margin-bottom:22px;}
+.ov-banner img{width:100%;height:100%;object-fit:cover;}
+.ov-banner-ov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.65) 0%,rgba(0,0,0,.18) 100%);display:flex;align-items:flex-end;padding:16px;}
+.ov-banner-ttl{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--white);letter-spacing:.05em;line-height:1.3;}
+.ov-icons{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:0 20px;margin-bottom:22px;}
+.ov-icon{background:var(--d2);border:1px solid rgba(255,255,255,.08);border-radius:3px;padding:13px 9px;text-align:center;}
+.ov-icon-em{font-size:20px;margin-bottom:5px;}
+.ov-icon-lbl{font-size:9px;color:var(--gray-l);letter-spacing:.06em;line-height:1.45;}
+.ov-tbl{width:100%;border-collapse:collapse;}
+.ov-tbl tr{border-bottom:1px solid rgba(255,255,255,.08);}
+.ov-tbl tr:last-child{border-bottom:none;}
+.ov-tbl td{padding:11px 0;font-size:11px;vertical-align:top;line-height:1.65;}
+.ov-tbl td:first-child{color:var(--gold);font-size:9px;letter-spacing:.15em;width:30%;padding-right:9px;white-space:nowrap;padding-top:12px;}
+.ov-tbl td:last-child{color:var(--gray-l);}
+.ov-divider{display:flex;align-items:center;gap:10px;margin:18px 20px;}
+.ov-divider-line{flex:1;height:1px;background:rgba(200,184,154,.18);}
+.ov-divider-txt{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.48em;color:var(--gold-d);text-transform:uppercase;}
+
+
+/* ══ LOAN SIMULATOR ══ */
+.loan-modal{display:none;position:fixed;inset:0;z-index:500;background:rgba(20,20,22,.98);overflow-y:auto;}
+.loan-modal.on{display:block;animation:fadeUp .35s ease;}
+.loan-inner{max-width:480px;margin:0 auto;padding:calc(var(--nav-h) + 8px) 20px calc(var(--bot-h) + 16px);background:var(--black);}
+.loan-hdr{display:flex;align-items:flex-start;justify-content:space-between;padding:16px 0 14px;}
+.loan-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--white);letter-spacing:.04em;line-height:1.1;}
+.loan-subtitle{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;margin-top:3px;}
+.loan-close{background:none;border:1px solid rgba(200,184,154,.28);color:var(--gold);width:34px;height:34px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:4px;}
+.loan-plan-tag{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(200,184,154,.1);border:1px solid rgba(200,184,154,.25);
+  border-radius:2px;padding:6px 12px;margin-bottom:16px;
+  font-family:'Cinzel',serif;font-size:8.5px;letter-spacing:.3em;color:var(--gold);
+}
+.loan-section{margin-bottom:18px;}
+.loan-sec-title{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.loan-sec-title::after{content:'';flex:1;height:1px;background:rgba(200,184,154,.12);}
+.loan-field{margin-bottom:10px;}
+.loan-label{display:block;font-size:8.5px;letter-spacing:.18em;color:rgba(200,184,154,.7);margin-bottom:5px;text-transform:uppercase;}
+.loan-input-row{display:flex;align-items:center;gap:6px;}
+.loan-input{flex:1;background:var(--d2);border:1px solid rgba(255,255,255,.08);color:var(--white);font-family:'Cormorant Garamond',serif;font-size:18px;padding:9px 11px;border-radius:2px;outline:none;transition:border-color .2s;text-align:right;letter-spacing:.02em;width:0;}
+.loan-input:focus{border-color:var(--gold);background:rgba(200,184,154,.04);}
+.loan-fee-input{font-size:15px;}
+.loan-input-unit{font-size:10px;color:var(--gray);white-space:nowrap;letter-spacing:.08em;flex-shrink:0;}
+.loan-slider-wrap{padding:4px 0 14px;}
+.loan-slider{width:100%;appearance:none;height:2px;background:var(--d4);border-radius:1px;outline:none;cursor:pointer;}
+.loan-slider::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gold);border:2px solid var(--black);cursor:pointer;box-shadow:0 0 6px rgba(200,184,154,.4);}
+.loan-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--gold);border:2px solid var(--black);cursor:pointer;}
+.loan-slider-labels{display:flex;justify-content:space-between;font-size:8px;color:var(--gray);margin-top:2px;letter-spacing:.06em;}
+.loan-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+/* ボーナス */
+.loan-bonus-toggle{display:flex;align-items:center;justify-content:space-between;background:var(--d2);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:11px 13px;cursor:pointer;}
+.loan-bonus-label{font-size:12px;color:var(--gray-l);letter-spacing:.06em;}
+.loan-switch{width:36px;height:20px;background:var(--d4);border-radius:10px;position:relative;transition:background .2s;flex-shrink:0;}
+.loan-switch.on{background:var(--gold-d);}
+.loan-switch::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--white);transition:left .2s;}
+.loan-switch.on::after{left:19px;background:var(--gold-l);}
+.loan-bonus-fields{display:none;padding-top:10px;}
+.loan-bonus-fields.on{display:block;animation:fadeUp .22s ease;}
+/* 管理費グリッド */
+.loan-fees-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.loan-fee-item{}
+.loan-fee-label{display:block;font-size:8.5px;letter-spacing:.15em;color:rgba(200,184,154,.65);margin-bottom:4px;}
+/* 結果 */
+.loan-result{
+  background:var(--d1);border:1px solid rgba(200,184,154,.2);
+  border-radius:4px;padding:0;overflow:hidden;margin-top:4px;
+}
+.loan-result-block{padding:16px 16px 14px;}
+.loan-result-block-label{
+  display:flex;align-items:center;gap:7px;
+  font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.4em;
+  color:var(--gray);text-transform:uppercase;margin-bottom:10px;
+}
+.loan-result-block-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.loan-result-block-dot.loan{background:var(--gold);}
+.loan-result-block-dot.fees{background:var(--blue);}
+.loan-result-main-val{display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;}
+.loan-result-num{font-family:'Cormorant Garamond',serif;font-size:42px;color:var(--white);font-weight:300;letter-spacing:.02em;line-height:1;}
+.loan-result-unit{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);letter-spacing:.05em;}
+.loan-result-sub{font-size:9.5px;color:var(--gray);letter-spacing:.06em;width:100%;margin-top:3px;}
+.loan-fees-breakdown{display:flex;flex-direction:column;gap:5px;}
+.loan-fee-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;}
+.loan-fee-row-name{font-size:11px;color:var(--gray-l);letter-spacing:.06em;}
+.loan-fee-row-val{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--gray-l);letter-spacing:.04em;}
+.loan-fee-row-val.zero{color:var(--gray);opacity:.5;}
+.loan-result-divider{height:1px;background:rgba(255,255,255,.06);margin:0 16px;}
+/* 合計 */
+.loan-result-total{
+  padding:16px;
+  background:linear-gradient(135deg,rgba(200,184,154,.1),rgba(200,184,154,.04));
+  border-top:1px solid rgba(200,184,154,.15);
+}
+.loan-result-total-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+.loan-result-total-val{display:flex;align-items:baseline;gap:4px;}
+.loan-result-total-val span:first-child{font-family:'Cormorant Garamond',serif;font-size:46px;color:var(--gold);font-weight:300;letter-spacing:.02em;line-height:1;}
+.loan-result-total-unit{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold-l);}
+.loan-result-total-sub{font-size:9.5px;color:var(--gray);margin-top:5px;letter-spacing:.06em;line-height:1.7;}
+/* 詳細数値 */
+.loan-result-rows{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.05);margin:0;}
+.loan-result-row{background:var(--d2);padding:10px 13px;}
+.loan-result-row-lbl{font-size:8px;color:var(--gray);letter-spacing:.15em;margin-bottom:3px;}
+.loan-result-row-val{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);letter-spacing:.04em;}
+.loan-result-row-sub{font-size:8.5px;color:var(--gray);margin-top:1px;}
+.loan-note{font-size:9px;color:var(--gray);line-height:1.75;letter-spacing:.04em;padding:12px 16px;border-top:1px solid rgba(255,255,255,.05);}
+
+/* ══ DOCS ══ */
+.docs-section-title{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.45em;color:rgba(200,184,154,.5);text-transform:uppercase;padding:0 20px 10px;}
+.docs-list{display:flex;flex-direction:column;gap:7px;padding:0 20px;}
+.doc-item{background:var(--d2);border:1px solid rgba(255,255,255,.08);border-radius:3px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .2s,transform .15s;}
+.doc-item:hover{border-color:rgba(200,184,154,.32);transform:translateX(2px);}
+.doc-icon{width:42px;height:50px;border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.doc-icon.pdf{background:rgba(220,60,60,.09);border:1px solid rgba(220,60,60,.22);}
+.doc-icon.img{background:rgba(200,184,154,.09);border:1px solid rgba(200,184,154,.22);}
+.doc-icon.zip{background:rgba(107,159,228,.09);border:1px solid rgba(107,159,228,.18);}
+.doc-icon.mov{background:rgba(107,174,140,.09);border:1px solid rgba(107,174,140,.2);}
+.doc-body{flex:1;min-width:0;}
+.doc-name{font-family:'Noto Serif JP',serif;font-size:13px;color:var(--white);letter-spacing:.06em;margin-bottom:3px;}
+.doc-meta{font-size:9.5px;color:var(--gray);letter-spacing:.06em;}
+.doc-tag{display:inline-block;font-family:'Cinzel',serif;font-size:7.5px;padding:1px 6px;border-radius:1px;margin-left:5px;letter-spacing:.15em;}
+.doc-tag.new{background:rgba(200,184,154,.15);border:1px solid var(--gold);color:var(--gold);}
+.doc-tag.limited{background:rgba(224,85,85,.1);border:1px solid var(--red);color:var(--red);}
+.doc-dl{flex-shrink:0;background:none;border:1px solid rgba(200,184,154,.28);color:var(--gold);font-size:9.5px;padding:7px 12px;cursor:pointer;letter-spacing:.1em;transition:all .2s;border-radius:2px;white-space:nowrap;font-family:'Noto Sans JP',sans-serif;}
+.doc-item:hover .doc-dl{background:var(--gold);color:var(--black);}
+.docs-divider{height:1px;margin:14px 20px;background:rgba(255,255,255,.05);}
+.docs-empty{padding:40px 20px;text-align:center;color:var(--gray);font-size:12px;letter-spacing:.1em;}
+.docs-note{padding:12px 20px 0;font-size:9px;color:var(--gray);line-height:1.85;letter-spacing:.05em;}
+
+/* ══ LINKS ══ */
+.links-wrap{padding:0 20px;}
+.links-staff-card{
+  background:linear-gradient(135deg,rgba(200,184,154,.1),rgba(200,184,154,.04));
+  border:1px solid rgba(200,184,154,.2);border-radius:4px;
+  padding:18px 18px 16px;margin-bottom:20px;
+  display:flex;align-items:center;gap:14px;
+}
+.links-staff-avatar{
+  width:46px;height:46px;border-radius:50%;flex-shrink:0;
+  background:var(--d3);border:1.5px solid rgba(200,184,154,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+}
+.links-staff-label{font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.35em;color:var(--gold);margin-bottom:4px;}
+.links-staff-name{font-family:'Noto Serif JP',serif;font-size:16px;color:var(--white);letter-spacing:.08em;margin-bottom:1px;}
+.links-staff-dept{font-size:9.5px;color:var(--gray);letter-spacing:.08em;}
+
+.links-group{margin-bottom:22px;}
+.links-group-title{
+  font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.55em;
+  color:rgba(200,184,154,.5);text-transform:uppercase;
+  margin-bottom:8px;display:flex;align-items:center;gap:10px;
+}
+.links-group-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06);}
+.link-item{
+  display:flex;align-items:center;gap:14px;
+  background:var(--d2);border:1px solid rgba(255,255,255,.08);
+  border-radius:3px;padding:13px 15px;margin-bottom:5px;
+  text-decoration:none;cursor:pointer;
+  transition:border-color .2s,transform .15s;
+}
+.link-item:hover{border-color:rgba(200,184,154,.3);transform:translateX(2px);}
+.link-icon{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.link-icon.tel  {background:rgba(107,174,140,.12);border:1px solid rgba(107,174,140,.3);}
+.link-icon.mail {background:rgba(200,184,154,.1); border:1px solid rgba(200,184,154,.25);}
+.link-icon.line {background:rgba(6,199,85,.1);    border:1px solid rgba(6,199,85,.3);}
+.link-icon.web  {background:rgba(107,159,228,.1); border:1px solid rgba(107,159,228,.25);}
+.link-icon.map  {background:rgba(224,85,85,.1);   border:1px solid rgba(224,85,85,.25);}
+.link-icon.doc  {background:rgba(180,140,220,.1); border:1px solid rgba(180,140,220,.25);}
+.link-icon svg  {width:18px;height:18px;}
+.link-body{flex:1;min-width:0;}
+.link-label{font-family:'Noto Serif JP',serif;font-size:13px;color:var(--white);letter-spacing:.06em;margin-bottom:2px;}
+.link-sub{font-size:10px;color:var(--gray);letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.link-arr{color:rgba(200,184,154,.4);font-size:18px;flex-shrink:0;}
+/* fp-modal 内のCTA */
+.btn-contact{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--gold);border:none;color:var(--black);font-family:'Noto Serif JP',serif;font-size:13px;font-weight:500;letter-spacing:.2em;padding:16px;cursor:pointer;border-radius:2px;text-decoration:none;margin-bottom:8px;transition:background .25s;}
+.btn-contact:hover{background:var(--gold-l);}
+
+/* ══ ADMIN PANEL ══ */
+.admin-panel{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.0);pointer-events:none;}
+.admin-panel.on{display:block;}
+.admin-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);pointer-events:auto;}
+.admin-drawer{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--d2);border-top:1px solid rgba(200,184,154,.25);
+  border-radius:12px 12px 0 0;
+  padding:0 0 env(safe-area-inset-bottom);
+  max-height:90vh;overflow-y:auto;
+  pointer-events:auto;
+  animation:slideUp .35s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.admin-drawer-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:12px auto 0;}
+.admin-drawer-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;padding:16px 20px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+.admin-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.06);}
+.admin-tab{flex:1;background:none;border:none;color:var(--gray);font-size:11px;padding:12px;cursor:pointer;letter-spacing:.1em;transition:color .2s;font-family:'Noto Sans JP',sans-serif;position:relative;}
+.admin-tab::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:1px;background:var(--gold);transform:scaleX(0);transition:transform .25s;}
+.admin-tab.on{color:var(--gold);}.admin-tab.on::after{transform:scaleX(1);}
+.admin-tab-pane{display:none;padding:18px 20px 24px;}.admin-tab-pane.on{display:block;}
+
+/* 物件データ管理 */
+.adm-plans-note{font-size:10px;color:var(--gray);letter-spacing:.06em;line-height:1.7;margin-bottom:14px;padding:10px 12px;background:var(--d2);border-radius:2px;border-left:2px solid rgba(200,184,154,.3);}
+.adm-plan-card{background:var(--d2);border:1px solid rgba(255,255,255,.1);border-radius:3px;margin-bottom:8px;overflow:hidden;}
+.adm-plan-card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;cursor:pointer;background:var(--d3);
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.adm-plan-card-type{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);letter-spacing:.05em;}
+.adm-plan-card-price{font-size:10px;color:var(--gray-l);letter-spacing:.06em;}
+.adm-plan-card-toggle{color:var(--gold);font-size:13px;transition:transform .2s;}
+.adm-plan-card-body{display:none;padding:14px;}
+.adm-plan-card-body.open{display:block;}
+.adm-plan-sub-title{font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.45em;color:rgba(200,184,154,.5);text-transform:uppercase;margin:12px 0 8px;display:flex;align-items:center;gap:8px;}
+.adm-plan-sub-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.05);}
+.adm-plan-sub-title:first-child{margin-top:0;}
+.adm-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.adm-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.adm-plan-field{}
+.adm-plan-label{display:block;font-size:8px;letter-spacing:.18em;color:var(--gray);margin-bottom:4px;}
+.adm-plan-input{
+  width:100%;background:var(--d2);border:1px solid rgba(255,255,255,.12);
+  color:var(--white);font-family:'Cormorant Garamond',serif;font-size:16px;
+  padding:8px 10px;border-radius:2px;outline:none;text-align:right;
+  transition:border-color .2s;letter-spacing:.02em;
+}
+.adm-plan-input:focus{border-color:var(--gold);background:rgba(200,184,154,.04);}
+.adm-plan-input-unit{font-size:9px;color:var(--gray);margin-top:3px;text-align:right;letter-spacing:.06em;}
+.adm-save-status{height:24px;display:flex;align-items:center;margin-top:8px;font-size:11px;color:var(--green);letter-spacing:.1em;transition:opacity .3s;}
+
+/* URL生成フォーム */
+.adm-field{margin-bottom:14px;}
+.adm-label{display:block;font-size:8.5px;letter-spacing:.25em;color:var(--gold);margin-bottom:6px;text-transform:uppercase;font-family:'Cinzel',serif;}
+.adm-input{width:100%;background:var(--d3);border:1px solid rgba(255,255,255,.08);color:var(--white);font-family:'Noto Sans JP',sans-serif;font-size:13px;padding:10px 12px;border-radius:2px;outline:none;transition:border-color .2s;}
+.adm-input:focus{border-color:var(--gold);}
+.adm-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.adm-check-group{display:flex;flex-direction:column;gap:7px;}
+.adm-check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--gray-l);letter-spacing:.05em;}
+.adm-check input[type=checkbox]{appearance:none;width:14px;height:14px;flex-shrink:0;border:1px solid rgba(200,184,154,.35);background:var(--d3);cursor:pointer;position:relative;border-radius:1px;}
+.adm-check input[type=checkbox]:checked{background:var(--gold);border-color:var(--gold);}
+.adm-check input[type=checkbox]:checked::after{content:'';position:absolute;top:1px;left:4px;width:4px;height:7px;border:1.5px solid var(--black);border-top:none;border-left:none;transform:rotate(45deg);}
+.adm-check-desc{font-size:9px;color:var(--gray);margin-left:22px;margin-top:-3px;letter-spacing:.04em;}
+.adm-section-sep{height:1px;background:rgba(255,255,255,.06);margin:16px 0;}
+
+/* URL出力 */
+.adm-url-output{background:var(--d3);border:1px solid rgba(200,184,154,.2);border-radius:3px;padding:12px 14px;font-size:10px;color:var(--gray-l);letter-spacing:.04em;word-break:break-all;line-height:1.6;min-height:50px;margin-bottom:10px;}
+.adm-btn-row{display:flex;gap:6px;}
+.adm-btn{flex:1;background:var(--gold);border:none;color:var(--black);font-family:'Noto Serif JP',serif;font-size:12px;font-weight:500;letter-spacing:.15em;padding:13px;cursor:pointer;border-radius:2px;transition:background .2s;}
+.adm-btn:hover{background:var(--gold-l);}
+.adm-btn.sub{background:none;border:1px solid rgba(200,184,154,.25);color:var(--gold);font-family:'Noto Sans JP',sans-serif;}
+.adm-btn.sub:hover{background:rgba(200,184,154,.08);}
+
+/* QR */
+.adm-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0;}
+#qrCanvas{border-radius:4px;}
+
+/* 資料マスター */
+.doc-master-list{display:flex;flex-direction:column;gap:6px;}
+.doc-master-item{display:flex;align-items:center;gap:10px;background:var(--d2);border:1px solid rgba(255,255,255,.08);border-radius:3px;padding:11px 13px;}
+.doc-master-drag{color:var(--gray);cursor:grab;font-size:16px;flex-shrink:0;}
+.doc-master-info{flex:1;min-width:0;}
+.doc-master-name{font-size:12px;color:var(--white);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.doc-master-cat{font-size:9px;color:var(--gray);margin-top:2px;letter-spacing:.08em;}
+.doc-master-id{font-family:'Cinzel',serif;font-size:8.5px;color:var(--gold-d);letter-spacing:.15em;flex-shrink:0;}
+
+/* Leaflet */
+.leaflet-container{background:#1a1a1a!important;}
+.leaflet-popup-content-wrapper{background:var(--d2);border:1px solid rgba(200,184,154,.25);border-radius:3px;box-shadow:none;color:var(--white);}
+.leaflet-popup-tip{background:var(--d2);}
+.leaflet-popup-content{font-family:'Noto Sans JP',sans-serif;font-size:12px;color:var(--gray-l);margin:7px 11px;}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="hdr">
+  <button class="logo" onclick="go('top')">
+    <div class="logo-emblem">
+      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17 1.5L32.5 17 17 32.5 1.5 17Z" stroke="#C8B89A" stroke-width=".8" fill="none"/>
+        <path d="M17 7L27 17 17 27 7 17Z" stroke="#C8B89A" stroke-width=".5" fill="rgba(200,184,154,.07)"/>
+        <line x1="17" y1="7" x2="17" y2="27" stroke="#C8B89A" stroke-width=".4" opacity=".4"/>
+        <line x1="7" y1="17" x2="27" y2="17" stroke="#C8B89A" stroke-width=".4" opacity=".4"/>
+        <circle cx="17" cy="1.5" r="1.3" fill="#C8B89A"/>
+        <circle cx="32.5" cy="17" r="1.3" fill="#C8B89A"/>
+        <circle cx="17" cy="32.5" r="1.3" fill="#C8B89A"/>
+        <circle cx="1.5" cy="17" r="1.3" fill="#C8B89A"/>
+        <text x="17" y="21" text-anchor="middle" font-family="'Cinzel',serif" font-size="7.5" fill="#C8B89A" letter-spacing="0.5">GR</text>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <span class="logo-text-main">Grand Residence</span>
+      <span class="logo-text-sub">Minami-Aoyama</span>
+    </div>
+  </button>
+  <div class="hdr-right">
+    <a href="tel:0300000000" class="hdr-tel"><small>お問合せ</small>03-0000-0000</a>
+    <button class="hdr-admin-btn" id="adminBtn" onclick="toggleAdmin()">管理</button>
+  </div>
+</header>
+
+<!-- ══ MAIN ══ -->
+<main class="main" id="mainView">
+
+<!-- TOP -->
+<section class="sec on" id="s-top">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-body">
+      <div class="hero-kicker">Premium Condominium</div>
+      <div class="hero-ttl">The Grand<br><em>Residence</em></div>
+      <div class="hero-addr">東京都港区南青山 ○丁目○番○号</div>
+      <div class="hero-stats">
+        <div class="hs-item"><div class="hs-num">48</div><div class="hs-lbl">総戸数</div></div>
+        <div class="hs-item"><div class="hs-num">20</div><div class="hs-lbl">階建</div></div>
+        <div class="hs-item"><div class="hs-num">'27</div><div class="hs-lbl">入居予定</div></div>
+      </div>
+    </div>
+    <div class="hero-cta"><div class="hero-cta-line"></div><span>Scroll</span></div>
+  </div>
+  <div class="announce">
+    <div class="announce-txt">第1期 先着順販売受付中<br>モデルルーム公開中（要予約）</div>
+    <div class="announce-badge">OPEN</div>
+  </div>
+
+  <!-- 顧客バナー（URLパラメータがある時のみ表示） -->
+  <div class="client-banner" id="clientBanner" style="display:none;margin-top:14px;">
+    <div class="client-banner-name">ようこそ、<em id="clientBannerName"></em> 様</div>
+    <div class="client-banner-staff" id="clientBannerStaff"></div>
+  </div>
+
+  <div class="top-menu">
+    <div class="top-menu-title">Contents</div>
+    <div class="top-cards" id="topCards">
+      <button class="top-card" id="tc-gallery" onclick="go('gallery')"><div><div class="top-card-en">Gallery</div><div class="top-card-jp">建物パース・外観ギャラリー</div></div><div class="top-card-arr">›</div></button>
+      <button class="top-card" id="tc-video" onclick="go('video')"><div><div class="top-card-en">Movie</div><div class="top-card-jp">紹介動画・空撮ムービー</div></div><div class="top-card-arr">›</div></button>
+      <button class="top-card" id="tc-floorplan" onclick="go('floorplan')"><div><div class="top-card-en">Floor Plan</div><div class="top-card-jp">間取り図プランビューワー</div></div><div class="top-card-arr">›</div></button>
+      <button class="top-card" id="tc-price" onclick="go('price')"><div><div class="top-card-en">Price</div><div class="top-card-jp">価格表・販売情報</div></div><div class="top-card-arr">›</div></button>
+      <button class="top-card" id="tc-map" onclick="go('map')"><div><div class="top-card-en">Location</div><div class="top-card-jp">周辺環境マップ</div></div><div class="top-card-arr">›</div></button>
+      <button class="top-card" id="tc-overview" onclick="go('overview')"><div><div class="top-card-en">Overview</div><div class="top-card-jp">物件概要・設備仕様</div></div><div class="top-card-arr">›</div></button>
+      <button class="top-card" id="tc-docs" onclick="go('docs')"><div><div class="top-card-en">Documents</div><div class="top-card-jp">資料集・パンフレット</div></div><div class="top-card-arr">›</div></button>
+      <button class="top-card" onclick="openLoan()"><div><div class="top-card-en">Loan Simulator</div><div class="top-card-jp">住宅ローンシミュレーション</div></div><div class="top-card-arr">›</div></button>
+      <button class="top-card" id="tc-contact" onclick="go('contact')"><div><div class="top-card-en">Links</div><div class="top-card-jp">リンク集・お問い合わせ先</div></div><div class="top-card-arr">›</div></button>
+    </div>
+  </div>
+  <div style="padding:22px 20px 10px;text-align:center;"><div style="font-size:9.5px;color:var(--gray);letter-spacing:.15em;line-height:2.2;">販売代理：株式会社○○不動産<br><span style="color:var(--gold);">営業時間 10:00〜18:00（水曜定休）</span></div></div>
+</section>
+
+<!-- GALLERY -->
+<section class="sec" id="s-gallery">
+  <div class="pg-head"><div class="pg-head-en">Gallery</div><div class="pg-head-jp">外観・ギャラリー</div></div>
+  <div class="gold-rule"></div>
+  <div class="gal-tabs">
+    <button class="gal-tab on" onclick="switchGalCat(this,'exterior')">外観・アプローチ</button>
+    <button class="gal-tab" onclick="switchGalCat(this,'interior')">モデルルーム</button>
+    <button class="gal-tab" onclick="switchGalCat(this,'amenity')">共用施設</button>
+    <button class="gal-tab" onclick="switchGalCat(this,'view')">眺望</button>
+  </div>
+  <div class="gal-viewer">
+    <img class="gal-main" id="galMain" src="" alt="">
+    <div class="gal-grad"></div>
+    <div class="gal-cap"><div class="gal-cap-ttl" id="galCapTtl"></div><div class="gal-cap-sub" id="galCapSub"></div></div>
+    <button class="gal-btn gal-prev" onclick="galNav(-1)">&#8249;</button>
+    <button class="gal-btn gal-next" onclick="galNav(1)">&#8250;</button>
+    <div class="gal-cnt" id="galCnt"></div>
+  </div>
+  <div class="gal-thumbs" id="galThumbs"></div>
+  <div style="height:24px;"></div>
+</section>
+
+<!-- VIDEO -->
+<section class="sec" id="s-video">
+  <div class="pg-head"><div class="pg-head-en">Movie</div><div class="pg-head-jp">紹介動画</div></div>
+  <div class="gold-rule"></div>
+  <div class="vid-list" id="vidList"></div>
+  <div style="height:24px;"></div>
+</section>
+<div class="vid-modal" id="vidModal">
+  <div class="vid-modal-inner">
+    <button class="vid-modal-close" onclick="closeVid()">&#10005;</button>
+    <iframe class="vid-modal-frame" id="vidFrame" src="" allowfullscreen title="動画"></iframe>
+  </div>
+</div>
+
+<!-- FLOOR PLAN -->
+<section class="sec" id="s-floorplan">
+  <div class="pg-head"><div class="pg-head-en">Floor Plan</div><div class="pg-head-jp">間取り・販売状況</div></div>
+  <div class="gold-rule"></div>
+  <!-- ページ内タブ -->
+  <div class="fp-page-tabs">
+    <button class="fp-page-tab on" id="fpt-status" onclick="switchFpTab('status')">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="16" height="14" rx="1"/><path d="M2 7h16M7 7v10"/></svg>
+      販売状況表
+    </button>
+    <button class="fp-page-tab" id="fpt-plan" onclick="switchFpTab('plan')">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="16" height="16" rx="1"/><path d="M2 8h16M8 8v10"/></svg>
+      間取り図
+    </button>
+  </div>
+
+  <!-- 販売状況表 -->
+  <div id="fp-status-view">
+    <!-- フィルター -->
+    <div class="status-filters">
+      <div class="status-filter-group">
+        <button class="status-filter-btn on" onclick="filterStatus(this,'all')">全住戸</button>
+        <button class="status-filter-btn avail" onclick="filterStatus(this,'avail')">販売中</button>
+        <button class="status-filter-btn reserved" onclick="filterStatus(this,'reserved')">予約中</button>
+        <button class="status-filter-btn sold" onclick="filterStatus(this,'sold')">成約済</button>
+      </div>
+      <div class="status-filter-group">
+        <button class="status-type-btn on" onclick="filterType(this,'all')">全タイプ</button>
+        <button class="status-type-btn" onclick="filterType(this,'1LDK')">1LDK</button>
+        <button class="status-type-btn" onclick="filterType(this,'2LDK')">2LDK</button>
+        <button class="status-type-btn" onclick="filterType(this,'3LDK')">3LDK</button>
+        <button class="status-type-btn" onclick="filterType(this,'4LDK')">4LDK</button>
+      </div>
+    </div>
+    <!-- 凡例 -->
+    <div class="status-legend">
+      <span class="status-legend-item"><span class="status-dot avail"></span>販売中</span>
+      <span class="status-legend-item"><span class="status-dot reserved"></span>予約中</span>
+      <span class="status-legend-item"><span class="status-dot sold"></span>成約済</span>
+    </div>
+    <!-- フロア表 -->
+    <div class="status-table-wrap">
+      <table class="status-table" id="statusTable">
+        <thead id="statusTableHead"></thead>
+        <tbody id="statusTableBody"></tbody>
+      </table>
+    </div>
+    <!-- サマリー -->
+    <div class="status-summary" id="statusSummary"></div>
+  </div>
+
+  <!-- 間取り図（既存） -->
+  <div id="fp-plan-view" style="display:none;">
+    <div class="fp-compare-bar">
+    <span class="fp-compare-label" id="fpCompareLabel">プランを選んでタップ</span>
+    <button class="fp-compare-toggle" id="fpCompareToggle" onclick="toggleCompareMode()">比較モード OFF</button>
+  </div>
+  <div class="fp-grid" id="fpGrid"></div>
+  </div><!-- /fp-plan-view -->
+  <div style="height:24px;"></div>
+</section>
+
+<!-- 通常詳細モーダル -->
+<div class="fp-modal" id="fpModal">
+  <div class="fp-modal-inner">
+    <div class="fp-modal-hdr">
+      <div class="fp-modal-ttl" id="fpModalTtl"></div>
+      <button class="fp-modal-close" onclick="closeFP()">&#10005;</button>
+    </div>
+    <div class="fp-modal-svg" id="fpModalSvg" onclick="toggleZoom(this)">
+      <div class="fp-zoom-hint" id="fpZoomHint">タップで拡大</div>
+    </div>
+    <div class="fp-specs" id="fpModalSpecs"></div>
+    <div style="display:flex;gap:6px;margin-bottom:6px;">
+      <button class="btn-contact" style="font-size:11.5px;letter-spacing:.12em;flex:1;padding:13px;" onclick="openLoanFromPlan();closeFP();">
+        ローンシミュレーション
+      </button>
+    </div>
+    <button class="btn-contact" style="font-size:11.5px;letter-spacing:.12em;background:none;border:1px solid rgba(200,184,154,.28);color:var(--gold);" onclick="go('contact');closeFP();">担当者に問い合わせる</button>
+  </div>
+</div>
+
+<!-- 住戸詳細モーダル -->
+<div class="unit-modal" id="unitModal">
+  <div class="unit-modal-inner">
+    <div class="unit-modal-handle"></div>
+    <div class="unit-modal-no" id="unitModalNo"></div>
+    <div class="unit-modal-type" id="unitModalType"></div>
+    <div class="unit-modal-grid">
+      <div class="unit-modal-row"><div class="unit-modal-row-lbl">階数</div><div class="unit-modal-row-val" id="unitModalFloor"></div></div>
+      <div class="unit-modal-row"><div class="unit-modal-row-lbl">タイプ</div><div class="unit-modal-row-val" id="unitModalTypeVal"></div></div>
+      <div class="unit-modal-row"><div class="unit-modal-row-lbl">専有面積</div><div class="unit-modal-row-val" id="unitModalArea"></div></div>
+      <div class="unit-modal-row"><div class="unit-modal-row-lbl">バルコニー</div><div class="unit-modal-row-val" id="unitModalBalc"></div></div>
+      <div class="unit-modal-row" style="grid-column:1/-1"><div class="unit-modal-row-lbl">価格</div><div class="unit-modal-row-val gold" id="unitModalPrice"></div></div>
+      <div class="unit-modal-row"><div class="unit-modal-row-lbl">管理費</div><div class="unit-modal-row-val" id="unitModalMgmt"></div></div>
+      <div class="unit-modal-row"><div class="unit-modal-row-lbl">販売状況</div><div class="unit-modal-row-val" id="unitModalStatus"></div></div>
+    </div>
+    <div class="unit-modal-actions">
+      <button class="unit-modal-btn-loan" onclick="openLoanFromUnit()">ローンシミュレーション</button>
+      <button class="unit-modal-btn-close" onclick="closeUnitModal()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 比較モーダル -->
+<div class="fp-cmp-modal" id="fpCmpModal">
+  <div class="fp-cmp-hdr">
+    <div class="fp-cmp-title">プラン比較</div>
+    <button class="fp-cmp-close" onclick="closeCmp()">&#10005;</button>
+  </div>
+  <div class="fp-cmp-body">
+    <div class="fp-cmp-col" id="cmpColA">
+      <div class="fp-cmp-col-head">
+        <div class="fp-cmp-col-type" id="cmpTypeA">—</div>
+        <button class="fp-cmp-zoom-btn" onclick="toggleCmpZoom('A')" title="拡大">&#128269;</button>
+      </div>
+      <div class="fp-cmp-svg-wrap" id="cmpSvgA" onclick="toggleCmpZoom('A')"></div>
+      <div class="fp-cmp-specs" id="cmpSpecsA"></div>
+      <div class="fp-cmp-cta">
+        <button class="fp-cmp-btn-loan" onclick="openLoanFromCmp('A')">ローンシミュレーション</button>
+      </div>
+    </div>
+    <div class="fp-cmp-col" id="cmpColB">
+      <div class="fp-cmp-col-head">
+        <div class="fp-cmp-col-type" id="cmpTypeB">—</div>
+        <button class="fp-cmp-zoom-btn" onclick="toggleCmpZoom('B')" title="拡大">&#128269;</button>
+      </div>
+      <div class="fp-cmp-svg-wrap" id="cmpSvgB" onclick="toggleCmpZoom('B')"></div>
+      <div class="fp-cmp-specs" id="cmpSpecsB"></div>
+      <div class="fp-cmp-cta">
+        <button class="fp-cmp-btn-loan" onclick="openLoanFromCmp('B')">ローンシミュレーション</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICE -->
+<section class="sec" id="s-price">
+  <div class="pg-head"><div class="pg-head-en">Price</div><div class="pg-head-jp">価格表</div></div>
+  <div class="gold-rule"></div>
+  <div class="price-filter">
+    <button class="pf-btn on" onclick="filterPrice(this,'all')">すべて</button>
+    <button class="pf-btn" onclick="filterPrice(this,'avail')">販売中</button>
+    <button class="pf-btn" onclick="filterPrice(this,'1ldk')">1LDK</button>
+    <button class="pf-btn" onclick="filterPrice(this,'2ldk')">2LDK</button>
+    <button class="pf-btn" onclick="filterPrice(this,'3ldk')">3LDK</button>
+    <button class="pf-btn" onclick="filterPrice(this,'4ldk')">4LDK</button>
+  </div>
+  <div class="price-tbl-wrap"><table class="price-tbl"><thead><tr><th>住戸番号</th><th>階</th><th>タイプ</th><th>専有面積</th><th>バルコニー</th><th>価格（万円）</th><th>管理費</th><th>状況</th></tr></thead><tbody id="priceTbody"></tbody></table></div>
+  <div class="price-note">※価格は消費税込みです。管理費・修繕積立金は月額です。<br>※上記情報は変更になる場合があります。詳細は担当者にお問い合わせください。</div>
+  <div style="height:24px;"></div>
+</section>
+
+<!-- MAP -->
+<section class="sec" id="s-map">
+  <div class="pg-head"><div class="pg-head-en">Location</div><div class="pg-head-jp">周辺環境</div></div>
+  <div class="gold-rule"></div>
+  <div id="mapEl"></div>
+  <div class="map-spots" id="mapSpots"></div>
+  <div style="height:24px;"></div>
+</section>
+
+<!-- OVERVIEW -->
+<section class="sec" id="s-overview">
+  <div class="pg-head"><div class="pg-head-en">Overview</div><div class="pg-head-jp">物件概要</div></div>
+  <div class="gold-rule"></div>
+  <div class="ov-banner"><img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80" alt="外観"><div class="ov-banner-ov"><div class="ov-banner-ttl">The Grand Residence<br>Minami-Aoyama</div></div></div>
+  <div class="ov-icons">
+    <div class="ov-icon"><div class="ov-icon-em">🏙</div><div class="ov-icon-lbl">都心一等地<br>南青山</div></div>
+    <div class="ov-icon"><div class="ov-icon-em">🚇</div><div class="ov-icon-lbl">表参道駅<br>徒歩4分</div></div>
+    <div class="ov-icon"><div class="ov-icon-em">🔒</div><div class="ov-icon-lbl">24H<br>コンシェルジュ</div></div>
+    <div class="ov-icon"><div class="ov-icon-em">🌊</div><div class="ov-icon-lbl">プール&amp;<br>スパ完備</div></div>
+    <div class="ov-icon"><div class="ov-icon-em">🌿</div><div class="ov-icon-lbl">緑地<br>隣接</div></div>
+    <div class="ov-icon"><div class="ov-icon-em">🚗</div><div class="ov-icon-lbl">機械式<br>駐車場</div></div>
+  </div>
+  <div style="padding:0 20px;"><table class="ov-tbl">
+    <tr><td>物件名</td><td>ザ・グランドレジデンス南青山</td></tr>
+    <tr><td>所在地</td><td>東京都港区南青山○丁目○番○号</td></tr>
+    <tr><td>交通</td><td>東京メトロ銀座線「表参道」駅 徒歩4分<br>東京メトロ半蔵門線「表参道」駅 徒歩4分</td></tr>
+    <tr><td>総戸数</td><td>48戸</td></tr>
+    <tr><td>構造・規模</td><td>鉄筋コンクリート造 地上20階建</td></tr>
+    <tr><td>専有面積</td><td>62.50㎡〜142.30㎡</td></tr>
+    <tr><td>竣工予定</td><td>2026年12月下旬（予定）</td></tr>
+    <tr><td>入居予定</td><td>2027年2月下旬（予定）</td></tr>
+    <tr><td>売主</td><td>株式会社○○デベロップメント</td></tr>
+    <tr><td>施工</td><td>○○建設株式会社</td></tr>
+    <tr><td>管理会社</td><td>株式会社○○コミュニティ</td></tr>
+  </table></div>
+  <div class="ov-divider"><div class="ov-divider-line"></div><div class="ov-divider-txt">Specifications</div><div class="ov-divider-line"></div></div>
+  <div style="padding:0 20px;"><table class="ov-tbl">
+    <tr><td>キッチン</td><td>システムキッチン（ステンレス天板・食洗機付）</td></tr>
+    <tr><td>浴室</td><td>ユニットバス（ミストサウナ・床暖房付）</td></tr>
+    <tr><td>床暖房</td><td>リビング・ダイニング・主寝室</td></tr>
+    <tr><td>天井高</td><td>2,500mm〜2,800mm</td></tr>
+    <tr><td>セキュリティ</td><td>オートロック・防犯カメラ・非接触ICカード</td></tr>
+    <tr><td>インターネット</td><td>光ファイバー最大1Gbps（全戸無料）</td></tr>
+    <tr><td>駐車場</td><td>機械式 30台（月額35,000円〜）</td></tr>
+  </table></div>
+  <div style="margin:14px 20px 0;padding:12px;background:var(--d2);border-radius:3px;border:1px solid rgba(255,255,255,.08);"><div style="font-size:9px;color:var(--gray);line-height:1.9;letter-spacing:.05em;">※掲載情報は2025年5月現在のものです。今後変更となる場合があります。<br>※完成予想図は設計段階の図面を基に描いたもので、実際とは異なる場合があります。</div></div>
+  <div style="height:24px;"></div>
+</section>
+
+<!-- DOCS -->
+<section class="sec" id="s-docs">
+  <div class="pg-head"><div class="pg-head-en">Documents</div><div class="pg-head-jp">資料集</div></div>
+  <div class="gold-rule"></div>
+  <div id="docsContent"></div>
+  <div class="docs-note">※資料のご利用は本ページをご覧のお客様限定です。<br>※最新版・詳細は担当者にご確認ください。</div>
+  <div style="height:24px;"></div>
+</section>
+
+<!-- LINKS -->
+<section class="sec" id="s-contact">
+  <div class="pg-head"><div class="pg-head-en">Links</div><div class="pg-head-jp">リンク集</div></div>
+  <div class="gold-rule"></div>
+  <div class="links-wrap">
+
+    <!-- 担当者カード（URLパラメータで差し替え） -->
+    <div class="links-staff-card">
+      <div class="links-staff-avatar">👤</div>
+      <div>
+        <div class="links-staff-label">Your Consultant</div>
+        <div class="links-staff-name" id="contactStaffName">担当者未設定</div>
+        <div class="links-staff-dept" id="contactStaffDept">株式会社○○不動産　営業部</div>
+      </div>
+    </div>
+
+    <!-- 連絡先 -->
+    <div class="links-group">
+      <div class="links-group-title">連絡先</div>
+      <a class="link-item" id="contactTelBtn" href="tel:0300000000">
+        <div class="link-icon tel">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">お電話</div>
+          <div class="link-sub" id="contactTelSub">03-0000-0000　10:00〜18:00（水曜定休）</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+      <a class="link-item" id="contactMailBtn" href="mailto:info@example.com?subject=グランドレジデンス　お問い合わせ">
+        <div class="link-icon mail">
+          <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">メール</div>
+          <div class="link-sub" id="contactMailSub">info@example.com</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+      <a class="link-item" href="https://lin.ee/example" target="_blank" rel="noopener">
+        <div class="link-icon line">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 5.92 2 10.76c0 2.7 1.36 5.1 3.5 6.72L4.5 21l4.08-2.1c1.1.3 2.25.46 3.42.46 5.52 0 10-3.92 10-8.76S17.52 2 12 2zm1 12H9v-1.5h4V14zm2-3H9v-1.5h6V11zm0-3H9V6.5h6V8z"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">LINE でお問い合わせ</div>
+          <div class="link-sub">公式LINEアカウント</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+    </div>
+
+    <!-- 物件関連リンク -->
+    <div class="links-group">
+      <div class="links-group-title">物件情報</div>
+      <a class="link-item" href="https://suumo.jp" target="_blank" rel="noopener">
+        <div class="link-icon web">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">SUUMO 物件ページ</div>
+          <div class="link-sub">suumo.jp — 詳細情報・口コミ</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+      <a class="link-item" href="https://maps.google.com/?q=東京都港区南青山" target="_blank" rel="noopener">
+        <div class="link-icon map">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">Google マップ</div>
+          <div class="link-sub">東京都港区南青山 — ルート検索</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+      <a class="link-item" href="https://www.homes.co.jp" target="_blank" rel="noopener">
+        <div class="link-icon web">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">LIFULL HOME'S</div>
+          <div class="link-sub">homes.co.jp — 物件詳細ページ</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+    </div>
+
+    <!-- 参考資料 -->
+    <div class="links-group">
+      <div class="links-group-title">参考・法令</div>
+      <a class="link-item" href="https://www.mlit.go.jp/jutakukentiku/" target="_blank" rel="noopener">
+        <div class="link-icon doc">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">国土交通省 住宅局</div>
+          <div class="link-sub">不動産・住宅に関する法令情報</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+      <a class="link-item" href="https://www.retio.or.jp/" target="_blank" rel="noopener">
+        <div class="link-icon doc">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">不動産適正取引推進機構</div>
+          <div class="link-sub">RETIO — 取引ガイドライン</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+    </div>
+
+  </div>
+  <div style="height:24px;"></div>
+</section>
+
+</main>
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="bot-nav" id="botNav">
+  <button class="bot-btn on" onclick="go('top')" id="bn-top">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    トップ
+  </button>
+  <button class="bot-btn" onclick="go('gallery')" id="bn-gallery">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    ギャラリー
+  </button>
+  <button class="bot-btn" onclick="go('floorplan')" id="bn-floorplan">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 21V9"/></svg>
+    間取り
+  </button>
+  <button class="bot-btn" onclick="go('docs')" id="bn-docs">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    資料集
+  </button>
+  <button class="bot-btn" onclick="go('contact')" id="bn-contact">
+    <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+    リンク集
+  </button>
+</nav>
+
+
+<!-- ══ LOAN SIMULATOR MODAL ══ -->
+<div class="loan-modal" id="loanModal">
+  <div class="loan-inner">
+    <div class="loan-hdr">
+      <div>
+        <div class="loan-title">住宅ローン</div>
+        <div class="loan-subtitle">シミュレーション</div>
+      </div>
+      <button class="loan-close" onclick="closeLoan()">&#10005;</button>
+    </div>
+
+    <!-- 選択プラン表示 -->
+    <div class="loan-plan-tag" id="loanPlanTag" style="display:none;"></div>
+
+    <!-- 物件価格・借入 -->
+    <div class="loan-section">
+      <div class="loan-sec-title">物件価格・借入設定</div>
+      <div class="loan-field">
+        <label class="loan-label">物件価格</label>
+        <div class="loan-input-row">
+          <input class="loan-input" type="number" id="loanPrice" value="18500" min="1000" max="200000" step="100">
+          <span class="loan-input-unit">万円</span>
+        </div>
+      </div>
+      <div class="loan-row2">
+        <div class="loan-field">
+          <label class="loan-label">頭金</label>
+          <div class="loan-input-row">
+            <input class="loan-input" type="number" id="loanDown" value="1000" min="0" step="100">
+            <span class="loan-input-unit">万円</span>
+          </div>
+        </div>
+        <div class="loan-field">
+          <label class="loan-label">借入額</label>
+          <div class="loan-input-row">
+            <input class="loan-input" type="number" id="loanAmount" value="17500" min="100" step="100">
+            <span class="loan-input-unit">万円</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 返済条件 -->
+    <div class="loan-section">
+      <div class="loan-sec-title">返済条件</div>
+      <div class="loan-field">
+        <label class="loan-label">借入期間：<span id="loanYearLabel">35年</span></label>
+        <div class="loan-slider-wrap">
+          <input class="loan-slider" type="range" id="loanYear" min="10" max="50" value="35" step="1">
+          <div class="loan-slider-labels"><span>10年</span><span>25年</span><span>35年</span><span>50年</span></div>
+        </div>
+      </div>
+      <div class="loan-field">
+        <label class="loan-label">金利（年率）：<span id="loanRateLabel">1.50%</span></label>
+        <div class="loan-slider-wrap">
+          <input class="loan-slider" type="range" id="loanRate" min="0.1" max="5.0" value="1.5" step="0.05">
+          <div class="loan-slider-labels"><span>0.1%</span><span>変動</span><span>固定</span><span>5.0%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ボーナス払い -->
+    <div class="loan-section">
+      <div class="loan-sec-title">ボーナス払い</div>
+      <div class="loan-bonus-toggle" onclick="toggleBonus()">
+        <span class="loan-bonus-label">ボーナス払いを利用する</span>
+        <div class="loan-switch" id="bonusSwitch"></div>
+      </div>
+      <div class="loan-bonus-fields" id="bonusFields">
+        <div class="loan-row2">
+          <div class="loan-field">
+            <label class="loan-label">ボーナス加算額</label>
+            <div class="loan-input-row">
+              <input class="loan-input" type="number" id="loanBonus" value="300" min="0" step="50">
+              <span class="loan-input-unit">万円/回</span>
+            </div>
+          </div>
+          <div class="loan-field">
+            <label class="loan-label">年間回数</label>
+            <div class="loan-input-row">
+              <input class="loan-input" type="number" id="loanBonusTimes" value="2" min="1" max="2" step="1">
+              <span class="loan-input-unit">回/年</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 管理費等 -->
+    <div class="loan-section">
+      <div class="loan-sec-title">管理費等（月額）</div>
+      <div class="loan-fees-grid">
+        <div class="loan-fee-item">
+          <label class="loan-fee-label">管理費</label>
+          <div class="loan-input-row">
+            <input class="loan-input loan-fee-input" type="number" id="feeMgmt" value="27500" min="0" step="500">
+            <span class="loan-input-unit">円</span>
+          </div>
+        </div>
+        <div class="loan-fee-item">
+          <label class="loan-fee-label">修繕積立金</label>
+          <div class="loan-input-row">
+            <input class="loan-input loan-fee-input" type="number" id="feeRepair" value="12000" min="0" step="500">
+            <span class="loan-input-unit">円</span>
+          </div>
+        </div>
+        <div class="loan-fee-item">
+          <label class="loan-fee-label">駐車場使用料</label>
+          <div class="loan-input-row">
+            <input class="loan-input loan-fee-input" type="number" id="feeParking" value="35000" min="0" step="1000">
+            <span class="loan-input-unit">円</span>
+          </div>
+        </div>
+        <div class="loan-fee-item">
+          <label class="loan-fee-label">その他（月額）</label>
+          <div class="loan-input-row">
+            <input class="loan-input loan-fee-input" type="number" id="feeOther" value="0" min="0" step="500">
+            <span class="loan-input-unit">円</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 結果 -->
+    <div class="loan-result" id="loanResult">
+
+      <!-- ローン返済額 -->
+      <div class="loan-result-block">
+        <div class="loan-result-block-label">
+          <span class="loan-result-block-dot loan"></span>
+          ローン月々返済額
+        </div>
+        <div class="loan-result-main-val">
+          <span class="loan-result-num" id="loanMonthly">—</span>
+          <span class="loan-result-unit">万円</span>
+          <span class="loan-result-sub" id="loanMonthlySub"></span>
+        </div>
+      </div>
+
+      <div class="loan-result-divider"></div>
+
+      <!-- 管理費内訳 -->
+      <div class="loan-result-block">
+        <div class="loan-result-block-label">
+          <span class="loan-result-block-dot fees"></span>
+          管理費等（月額）
+        </div>
+        <div class="loan-fees-breakdown" id="loanFeesBreakdown"></div>
+      </div>
+
+      <div class="loan-result-divider"></div>
+
+      <!-- 月々合計 -->
+      <div class="loan-result-total">
+        <div class="loan-result-total-label">月々お支払い合計</div>
+        <div class="loan-result-total-val">
+          <span id="loanTotalMonthly">—</span>
+          <span class="loan-result-total-unit">万円</span>
+        </div>
+        <div class="loan-result-total-sub" id="loanTotalSub"></div>
+      </div>
+
+      <!-- 詳細数値 -->
+      <div class="loan-result-rows">
+        <div class="loan-result-row">
+          <div class="loan-result-row-lbl">借入総額</div>
+          <div class="loan-result-row-val" id="loanTotalAmt">—</div>
+          <div class="loan-result-row-sub">万円</div>
+        </div>
+        <div class="loan-result-row">
+          <div class="loan-result-row-lbl">総返済額</div>
+          <div class="loan-result-row-val" id="loanTotalPay">—</div>
+          <div class="loan-result-row-sub">万円</div>
+        </div>
+        <div class="loan-result-row">
+          <div class="loan-result-row-lbl">うち利息</div>
+          <div class="loan-result-row-val" id="loanTotalInt">—</div>
+          <div class="loan-result-row-sub">万円</div>
+        </div>
+        <div class="loan-result-row">
+          <div class="loan-result-row-lbl">ボーナス加算</div>
+          <div class="loan-result-row-val" id="loanBonusAmt">—</div>
+          <div class="loan-result-row-sub">万円/回</div>
+        </div>
+      </div>
+
+      <div class="loan-note">
+        ※元利均等返済方式による試算です。ボーナス払いは年2回加算で概算しています。<br>
+        ※金利は固定・変動の区分なしで計算しています。実際のローン条件は金融機関にご確認ください。
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══ ADMIN PANEL (ドロワー) ══ -->
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-overlay" onclick="closeAdmin()"></div>
+  <div class="admin-drawer">
+    <div class="admin-drawer-handle"></div>
+    <div class="admin-drawer-title">管理ツール — URL生成</div>
+    <div class="admin-tabs">
+      <button class="admin-tab on" onclick="switchAdmTab(this,'plans')">物件データ</button>
+      <button class="admin-tab" onclick="switchAdmTab(this,'url')">URL生成</button>
+      <button class="admin-tab" onclick="switchAdmTab(this,'docs')">資料マスター</button>
+      <button class="admin-tab" onclick="switchAdmTab(this,'qr')">QRコード</button>
+    </div>
+
+
+    <!-- 物件データタブ -->
+    <div class="admin-tab-pane on" id="adm-plans">
+      <div class="adm-plans-note">変更は即座に保存され、顧客画面のシミュレーターに反映されます。</div>
+      <div id="admPlansList"></div>
+      <div style="padding-top:12px;display:flex;gap:6px;">
+        <button class="adm-btn" onclick="savePlans()">💾 保存する</button>
+        <button class="adm-btn sub" onclick="resetPlans()">初期値に戻す</button>
+      </div>
+      <div class="adm-save-status" id="admSaveStatus"></div>
+    </div>
+
+    <!-- URL生成タブ -->
+    <div class="admin-tab-pane" id="adm-url">
+      <div class="adm-row">
+        <div class="adm-field">
+          <label class="adm-label">顧客名</label>
+          <input class="adm-input" type="text" id="admName" placeholder="山田 太郎" oninput="buildUrl()">
+        </div>
+        <div class="adm-field">
+          <label class="adm-label">担当スタッフ名</label>
+          <input class="adm-input" type="text" id="admStaff" placeholder="田中 花子" oninput="buildUrl()">
+        </div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label">担当メール（任意）</label>
+        <input class="adm-input" type="email" id="admMail" placeholder="tanaka@example.com" oninput="buildUrl()">
+      </div>
+      <div class="adm-field">
+        <label class="adm-label">担当電話（任意）</label>
+        <input class="adm-input" type="tel" id="admTel" placeholder="03-0000-0000" oninput="buildUrl()">
+      </div>
+
+      <div class="adm-section-sep"></div>
+
+      <div class="adm-field">
+        <label class="adm-label">表示する間取りプラン</label>
+        <div style="font-size:9px;color:var(--gray);margin-bottom:8px;letter-spacing:.04em;line-height:1.6;">価格・管理費等は「物件データ」タブで設定した値がURLに自動反映されます。</div>
+        <div class="adm-check-group" id="admFpChecks"></div>
+      </div>
+
+      <div class="adm-section-sep"></div>
+
+      <div class="adm-field">
+        <label class="adm-label">表示するセクション</label>
+        <div class="adm-check-group">
+          <label class="adm-check"><input type="checkbox" id="sc-gallery" checked onchange="buildUrl()"><span>ギャラリー</span></label>
+          <label class="adm-check"><input type="checkbox" id="sc-video" checked onchange="buildUrl()"><span>動画</span></label>
+          <label class="adm-check"><input type="checkbox" id="sc-floorplan" checked onchange="buildUrl()"><span>間取り図</span></label>
+          <label class="adm-check"><input type="checkbox" id="sc-price" checked onchange="buildUrl()"><span>価格表</span></label>
+          <label class="adm-check"><input type="checkbox" id="sc-map" checked onchange="buildUrl()"><span>周辺環境マップ</span></label>
+          <label class="adm-check"><input type="checkbox" id="sc-overview" checked onchange="buildUrl()"><span>物件概要</span></label>
+        </div>
+      </div>
+
+      <div class="adm-section-sep"></div>
+
+      <div class="adm-field">
+        <label class="adm-label">提供する資料（複数選択可）</label>
+        <div class="adm-check-group" id="admDocChecks"></div>
+      </div>
+
+      <div class="adm-section-sep"></div>
+
+      <div class="adm-field">
+        <label class="adm-label">生成されたURL</label>
+        <div class="adm-url-output" id="admUrlOutput">—</div>
+        <div class="adm-btn-row">
+          <button class="adm-btn" onclick="copyAdmUrl()">URLをコピー</button>
+          <button class="adm-btn sub" onclick="switchAdmTab(document.querySelector('.admin-tab:nth-child(3)'),'qr');genQR()">QR生成</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 資料マスタータブ -->
+    <div class="admin-tab-pane" id="adm-docs">
+      <div style="font-size:10px;color:var(--gray);line-height:1.8;margin-bottom:14px;letter-spacing:.05em;">以下がURL出し分けに使用できる資料IDの一覧です。HTML内の<code style="color:var(--gold);font-size:10px;">ALL_DOCS</code>配列を編集して資料を追加・変更してください。</div>
+      <div class="doc-master-list" id="docMasterList"></div>
+    </div>
+
+    <!-- QRタブ -->
+    <div class="admin-tab-pane" id="adm-qr">
+      <div style="font-size:11px;color:var(--gray);margin-bottom:14px;letter-spacing:.05em;">URL生成タブで設定したURLのQRコードを生成します。</div>
+      <div class="adm-qr-wrap">
+        <canvas id="qrCanvas" width="200" height="200"></canvas>
+        <div style="font-size:10px;color:var(--gray);text-align:center;letter-spacing:.06em;" id="qrStatus">URL生成タブで設定後、QR生成ボタンを押してください</div>
+      </div>
+      <div style="margin-top:14px;"><button class="adm-btn" onclick="downloadQR()">QR画像をダウンロード</button></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ═══════════════════════════════════════════
+//  全資料マスター（IDで顧客ごとに出し分け）
+// ═══════════════════════════════════════════
+var ALL_DOCS = [
+  // id: URLパラメータで渡す識別子
+  // cat: カテゴリ（グループ化表示に使用）
+  {id:'overview_v1',  icon:'📄', cls:'pdf', name:'物件概要書（第1版）',       meta:'PDF | 2.4MB | 2025.05更新', cat:'物件概要', tag:''},
+  {id:'floorplan_all',icon:'📄', cls:'pdf', name:'間取り図集（全プラン）',    meta:'PDF | 5.1MB | 2025.05更新', cat:'間取り',   tag:''},
+  {id:'floorplan_3ldk',icon:'📄',cls:'pdf', name:'間取り図（3LDK特集）',      meta:'PDF | 1.8MB | 2025.05更新', cat:'間取り',   tag:'new'},
+  {id:'floorplan_4ldk',icon:'📄',cls:'pdf', name:'間取り図（4LDK ペントハウス）',meta:'PDF | 2.1MB | 2025.05更新',cat:'間取り', tag:'limited'},
+  {id:'price_p1',     icon:'📄', cls:'pdf', name:'価格表（第1期）',            meta:'PDF | 0.8MB | 2025.05更新', cat:'価格',    tag:''},
+  {id:'spec_v1',      icon:'📄', cls:'pdf', name:'設備仕様書',                 meta:'PDF | 3.2MB | 2025.03更新', cat:'仕様',    tag:''},
+  {id:'location_map', icon:'🗺',  cls:'img', name:'周辺環境マップ',             meta:'PDF | 1.6MB | 2025.04更新', cat:'立地',    tag:''},
+  {id:'prs_image',    icon:'📦', cls:'zip', name:'高解像度パース画像セット',   meta:'ZIP | 48MB  | 2025.04更新', cat:'画像',    tag:''},
+  {id:'movie_promo',  icon:'🎬', cls:'mov', name:'プロモーション動画（MP4）',  meta:'MP4 | 320MB | 2025.05公開', cat:'動画',    tag:'new'},
+];
+
+// ═══════════════════════════════════════════
+//  静的データ
+// ═══════════════════════════════════════════
+var GAL={
+  exterior:[
+    {url:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80',ttl:'エントランスアプローチ',sub:'※完成予想図'},
+    {url:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80',ttl:'外観全景（北東側）',sub:'※完成予想図'},
+    {url:'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=900&q=80',ttl:'エントランスロビー',sub:'※完成予想図'},
+    {url:'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=900&q=80',ttl:'エクステリア夜景',sub:'※完成予想図'},
+  ],
+  interior:[
+    {url:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80',ttl:'リビング・ダイニング（Aタイプ）',sub:'※モデルルーム撮影'},
+    {url:'https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=900&q=80',ttl:'キッチン（Aタイプ）',sub:'※モデルルーム撮影'},
+    {url:'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&q=80',ttl:'主寝室（Aタイプ）',sub:'※モデルルーム撮影'},
+    {url:'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=900&q=80',ttl:'バスルーム',sub:'※モデルルーム撮影'},
+  ],
+  amenity:[
+    {url:'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=900&q=80',ttl:'スパ＆プール',sub:'※完成予想図'},
+    {url:'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=900&q=80',ttl:'フィットネスルーム',sub:'※完成予想図'},
+    {url:'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=900&q=80',ttl:'パーティールーム',sub:'※完成予想図'},
+  ],
+  view:[
+    {url:'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=900&q=80',ttl:'最上階からの眺望（東京湾方向）',sub:'※参考写真'},
+    {url:'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=900&q=80',ttl:'夜景（南方向）',sub:'※参考写真'},
+  ]
+};
+var VIDEOS=[
+  {thumb:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80',ttl:'物件紹介 プロモーションムービー',meta:'3:42 | 2025年5月公開',yt:'dQw4w9WgXcQ'},
+  {thumb:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80',ttl:'空撮ドローン映像 ― 周辺環境',meta:'2:15 | 2025年4月公開',yt:'dQw4w9WgXcQ'},
+  {thumb:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80',ttl:'モデルルーム ウォークスルー',meta:'5:08 | 2025年3月公開',yt:'dQw4w9WgXcQ'},
+];
+function R(x,y,w,h,l,s,f){f=f||'#E8E6DF';var m='';if(h>35){m='<text x="'+(x+w/2)+'" y="'+(y+h/2-7)+'" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#333" font-weight="500">'+l+'</text>';if(s)m+='<text x="'+(x+w/2)+'" y="'+(y+h/2+9)+'" text-anchor="middle" font-size="8" fill="#777">'+s+'</text>';}else{m='<text x="'+(x+w/2)+'" y="'+(y+h/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#333">'+l+'</text>';}return'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+f+'" stroke="#999" stroke-width="1.2"/>'+m;}
+function B(x,y,w,h,l){return'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="#DDCFAF" fill-opacity=".5" stroke="#C8B89A" stroke-width="1"/><text x="'+(x+w/2)+'" y="'+(y+h/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#7A5F35">'+l+'</text>';}
+function SVG(vw,vh,b){return'<svg viewBox="0 0 '+vw+' '+vh+'" xmlns="http://www.w3.org/2000/svg"><rect width="'+vw+'" height="'+vh+'" fill="#F5F4EE"/>'+b+'</svg>';}
+var FP_DEFAULT=[
+  {type:'3LDK',tag:'POPULAR',area:'92.40',floor:'5〜12階',price:'18,500万円〜',priceNum:18500,
+   fees:{mgmt:27500,repair:12000,parking:35000,other:0},
+   specs:[{l:'専有面積',v:'92.40',u:'㎡'},{l:'価格帯',v:'18,500',u:'万円〜'},{l:'バルコニー',v:'14.2',u:'㎡'}],
+   svg:SVG(290,225,R(10,10,125,80,'LDK','18.5帖','#E8DECA')+R(145,10,75,80,'洋室①','6.5帖')+R(228,10,52,80,'洋室②','5.5帖')+R(10,98,80,70,'洋室③','6.0帖')+R(98,98,58,70,'洗面/WC','')+R(164,98,60,35,'UB','1620')+R(164,140,60,28,'トイレ','')+R(232,98,50,70,'SIC','')+B(10,178,270,36,'バルコニー'))},
+  {type:'2LDK',tag:null,area:'78.20',floor:'3〜15階',price:'14,200万円〜',priceNum:14200,
+   fees:{mgmt:22800,repair:9500,parking:35000,other:0},
+   specs:[{l:'専有面積',v:'78.20',u:'㎡'},{l:'価格帯',v:'14,200',u:'万円〜'},{l:'バルコニー',v:'11.4',u:'㎡'}],
+   svg:SVG(270,205,R(10,10,125,90,'LDK','18.0帖','#E8DECA')+R(143,10,75,90,'洋室①','7.0帖')+R(226,10,34,44,'WC','')+R(226,60,34,40,'SIC','')+R(10,108,80,60,'洋室②','6.0帖')+R(97,108,60,28,'洗面','')+R(97,143,60,25,'UB','')+R(165,108,85,60,'WIC','')+B(10,178,250,22,'バルコニー'))},
+  {type:'1LDK',tag:null,area:'62.50',floor:'2〜20階',price:'10,800万円〜',priceNum:10800,
+   fees:{mgmt:18200,repair:7800,parking:0,other:0},
+   specs:[{l:'専有面積',v:'62.50',u:'㎡'},{l:'価格帯',v:'10,800',u:'万円〜'},{l:'バルコニー',v:'8.0',u:'㎡'}],
+   svg:SVG(255,185,R(10,10,130,90,'LDK','17.0帖','#E8DECA')+R(148,10,80,90,'洋室','8.0帖')+R(10,108,80,60,'WIC','')+R(98,108,50,28,'洗面','')+R(98,143,50,25,'UB','')+R(155,108,30,25,'WC','')+R(193,108,52,60,'SIC','')+B(10,162,235,18,'バルコニー'))},
+  {type:'4LDK',tag:'LUXURY',area:'142.30',floor:'16〜20階',price:'48,000万円〜',priceNum:48000,
+   fees:{mgmt:52000,repair:22000,parking:35000,other:5000},
+   specs:[{l:'専有面積',v:'142.30',u:'㎡'},{l:'価格帯',v:'48,000',u:'万円〜'},{l:'バルコニー',v:'32.0',u:'㎡'}],
+   svg:SVG(330,245,R(10,10,145,100,'LDK','27.0帖','#E8DECA')+R(163,10,82,60,'洋室①','8.0帖')+R(253,10,65,60,'洋室②','7.0帖')+R(10,118,82,80,'洋室③','7.5帖')+R(100,118,80,80,'主寝室','12帖')+R(163,78,82,32,'WIC','')+R(253,78,65,32,'洗面','')+R(253,118,32,40,'WC','')+R(288,118,30,40,'WC2','')+R(253,163,65,35,'UB','')+R(188,118,58,80,'ウォーク','')+B(10,208,310,30,'ウッドデッキバルコニー'))},
+];
+
+
+// FPデータをlocalStorageから読み込む（なければデフォルト使用）
+function loadFP(){
+  try{
+    var saved=localStorage.getItem('gr_fp_data');
+    if(saved){
+      var parsed=JSON.parse(saved);
+      // svgはデフォルトから引き継ぐ（localStorage保存対象外）
+      return FP_DEFAULT.map(function(def,i){
+        var s=parsed[i]||{};
+        return Object.assign({},def,{
+          priceNum: s.priceNum||def.priceNum,
+          price:    s.priceNum ? s.priceNum.toLocaleString()+'万円〜' : def.price,
+          area:     s.area||def.area,
+          floor:    s.floor||def.floor,
+          fees:{
+            mgmt:    s.fees&&s.fees.mgmt!=null    ? s.fees.mgmt    : def.fees.mgmt,
+            repair:  s.fees&&s.fees.repair!=null  ? s.fees.repair  : def.fees.repair,
+            parking: s.fees&&s.fees.parking!=null ? s.fees.parking : def.fees.parking,
+            other:   s.fees&&s.fees.other!=null   ? s.fees.other   : def.fees.other,
+          }
+        });
+      });
+    }
+  }catch(e){}
+  return FP_DEFAULT.map(function(d){return Object.assign({},d);});
+}
+var FP=loadFP();
+var PRICE_DATA=[
+  // 1F
+  {no:'101',floor:1,type:'1LDK',area:'62.50',balc:'8.00', price:'10,800',mgmt:'18,200',status:'sold'},
+  {no:'102',floor:1,type:'2LDK',area:'78.20',balc:'11.40',price:'14,200',mgmt:'22,800',status:'sold'},
+  {no:'103',floor:1,type:'3LDK',area:'92.40',balc:'14.20',price:'18,500',mgmt:'27,500',status:'sold'},
+  // 2F
+  {no:'201',floor:2,type:'1LDK',area:'62.50',balc:'8.00', price:'11,200',mgmt:'18,200',status:'avail'},
+  {no:'202',floor:2,type:'2LDK',area:'78.20',balc:'11.40',price:'14,500',mgmt:'22,800',status:'reserved'},
+  {no:'203',floor:2,type:'3LDK',area:'92.40',balc:'14.20',price:'18,700',mgmt:'27,500',status:'avail'},
+  // 3F
+  {no:'301',floor:3,type:'1LDK',area:'62.50',balc:'8.00', price:'11,400',mgmt:'18,200',status:'avail'},
+  {no:'302',floor:3,type:'2LDK',area:'78.20',balc:'11.40',price:'14,800',mgmt:'22,800',status:'avail'},
+  {no:'303',floor:3,type:'3LDK',area:'92.40',balc:'14.20',price:'19,000',mgmt:'27,500',status:'avail'},
+  // 4F
+  {no:'401',floor:4,type:'1LDK',area:'62.50',balc:'8.00', price:'11,600',mgmt:'18,200',status:'sold'},
+  {no:'402',floor:4,type:'2LDK',area:'78.20',balc:'11.40',price:'15,000',mgmt:'22,800',status:'avail'},
+  {no:'403',floor:4,type:'3LDK',area:'92.40',balc:'14.20',price:'19,200',mgmt:'27,500',status:'reserved'},
+  // 5F
+  {no:'501',floor:5,type:'1LDK',area:'62.50',balc:'8.00', price:'11,800',mgmt:'18,200',status:'avail'},
+  {no:'502',floor:5,type:'2LDK',area:'78.20',balc:'11.40',price:'15,200',mgmt:'22,800',status:'avail'},
+  {no:'503',floor:5,type:'3LDK',area:'95.60',balc:'14.20',price:'19,800',mgmt:'27,500',status:'reserved'},
+  // 6F
+  {no:'601',floor:6,type:'1LDK',area:'62.50',balc:'8.00', price:'12,000',mgmt:'18,200',status:'avail'},
+  {no:'602',floor:6,type:'2LDK',area:'78.20',balc:'11.40',price:'15,500',mgmt:'22,800',status:'avail'},
+  {no:'603',floor:6,type:'3LDK',area:'92.40',balc:'14.20',price:'20,000',mgmt:'27,500',status:'avail'},
+  // 7F
+  {no:'701',floor:7,type:'1LDK',area:'62.50',balc:'8.00', price:'12,200',mgmt:'18,200',status:'sold'},
+  {no:'702',floor:7,type:'2LDK',area:'78.20',balc:'11.40',price:'15,800',mgmt:'22,800',status:'sold'},
+  {no:'703',floor:7,type:'3LDK',area:'92.40',balc:'14.20',price:'20,300',mgmt:'27,500',status:'avail'},
+  // 8F
+  {no:'801',floor:8,type:'1LDK',area:'62.50',balc:'8.00', price:'12,400',mgmt:'18,200',status:'avail'},
+  {no:'802',floor:8,type:'2LDK',area:'78.20',balc:'11.40',price:'16,000',mgmt:'22,800',status:'reserved'},
+  {no:'803',floor:8,type:'3LDK',area:'92.40',balc:'14.20',price:'20,500',mgmt:'27,500',status:'avail'},
+  // 9F
+  {no:'901',floor:9,type:'1LDK',area:'62.50',balc:'8.00', price:'12,600',mgmt:'18,200',status:'avail'},
+  {no:'902',floor:9,type:'2LDK',area:'78.20',balc:'11.40',price:'16,200',mgmt:'22,800',status:'avail'},
+  {no:'903',floor:9,type:'3LDK',area:'92.40',balc:'14.20',price:'20,800',mgmt:'27,500',status:'avail'},
+  // 10F
+  {no:'1001',floor:10,type:'1LDK',area:'62.50',balc:'8.00', price:'12,800',mgmt:'18,200',status:'avail'},
+  {no:'1002',floor:10,type:'2LDK',area:'78.20',balc:'11.40',price:'16,500',mgmt:'22,800',status:'avail'},
+  {no:'1003',floor:10,type:'3LDK',area:'92.40',balc:'14.20',price:'21,800',mgmt:'27,500',status:'avail'},
+  // 11F
+  {no:'1101',floor:11,type:'1LDK',area:'62.50',balc:'8.00', price:'13,000',mgmt:'18,200',status:'sold'},
+  {no:'1102',floor:11,type:'2LDK',area:'78.20',balc:'11.40',price:'16,800',mgmt:'22,800',status:'avail'},
+  {no:'1103',floor:11,type:'3LDK',area:'92.40',balc:'14.20',price:'22,100',mgmt:'27,500',status:'reserved'},
+  // 12F
+  {no:'1201',floor:12,type:'1LDK',area:'62.50',balc:'8.00', price:'13,200',mgmt:'18,200',status:'avail'},
+  {no:'1202',floor:12,type:'2LDK',area:'78.20',balc:'11.40',price:'17,000',mgmt:'22,800',status:'avail'},
+  {no:'1203',floor:12,type:'3LDK',area:'92.40',balc:'14.20',price:'22,400',mgmt:'27,500',status:'avail'},
+  // 13F
+  {no:'1301',floor:13,type:'1LDK',area:'62.50',balc:'8.00', price:'13,500',mgmt:'18,200',status:'avail'},
+  {no:'1302',floor:13,type:'2LDK',area:'78.20',balc:'11.40',price:'17,300',mgmt:'22,800',status:'avail'},
+  {no:'1303',floor:13,type:'3LDK',area:'92.40',balc:'14.20',price:'22,800',mgmt:'27,500',status:'avail'},
+  // 14F
+  {no:'1401',floor:14,type:'1LDK',area:'62.50',balc:'8.00', price:'13,800',mgmt:'18,200',status:'reserved'},
+  {no:'1402',floor:14,type:'2LDK',area:'78.20',balc:'11.40',price:'17,600',mgmt:'22,800',status:'avail'},
+  {no:'1403',floor:14,type:'3LDK',area:'92.40',balc:'14.20',price:'23,200',mgmt:'27,500',status:'avail'},
+  // 15F
+  {no:'1501',floor:15,type:'1LDK',area:'62.50',balc:'8.00', price:'14,000',mgmt:'18,200',status:'avail'},
+  {no:'1502',floor:15,type:'2LDK',area:'78.20',balc:'11.40',price:'17,900',mgmt:'22,800',status:'avail'},
+  {no:'1503',floor:15,type:'3LDK',area:'92.40',balc:'14.20',price:'23,500',mgmt:'27,500',status:'sold'},
+  // 16F
+  {no:'1601',floor:16,type:'4LDK',area:'142.30',balc:'32.00',price:'48,000',mgmt:'52,000',status:'avail'},
+  {no:'1602',floor:16,type:'4LDK',area:'138.50',balc:'28.00',price:'45,000',mgmt:'52,000',status:'avail'},
+  // 17F
+  {no:'1701',floor:17,type:'4LDK',area:'142.30',balc:'32.00',price:'52,000',mgmt:'52,000',status:'avail'},
+  {no:'1702',floor:17,type:'4LDK',area:'138.50',balc:'28.00',price:'49,000',mgmt:'52,000',status:'reserved'},
+  // 18F
+  {no:'1801',floor:18,type:'4LDK',area:'142.30',balc:'32.00',price:'55,000',mgmt:'52,000',status:'avail'},
+  {no:'1802',floor:18,type:'4LDK',area:'138.50',balc:'28.00',price:'52,000',mgmt:'52,000',status:'avail'},
+  // 19F
+  {no:'1901',floor:19,type:'4LDK',area:'142.30',balc:'32.00',price:'58,000',mgmt:'52,000',status:'avail'},
+  {no:'1902',floor:19,type:'4LDK',area:'138.50',balc:'28.00',price:'55,000',mgmt:'52,000',status:'avail'},
+  // 20F
+  {no:'2001',floor:20,type:'1LDK',area:'64.00',balc:'8.00', price:'17,500',mgmt:'18,200',status:'avail'},
+  {no:'2002',floor:20,type:'2LDK',area:'80.00',balc:'12.00',price:'25,000',mgmt:'22,800',status:'avail'},
+];
+var MAP_SPOTS=[
+  {cat:'交通',ico:'🚇',items:[{name:'表参道駅（銀座線・半蔵門線・千代田線）',dist:'徒歩4分'},{name:'外苑前駅（銀座線）',dist:'徒歩7分'}]},
+  {cat:'教育',ico:'🏫',items:[{name:'南青山小学校',dist:'徒歩6分'},{name:'青山学院大学',dist:'徒歩8分'}]},
+  {cat:'商業・生活',ico:'🛍',items:[{name:'青山ベル・コモンズ',dist:'徒歩3分'},{name:'表参道ヒルズ',dist:'徒歩7分'},{name:'成城石井',dist:'徒歩5分'}]},
+  {cat:'医療',ico:'🏥',items:[{name:'青山メディカルクリニック',dist:'徒歩4分'},{name:'○○総合病院',dist:'徒歩10分'}]},
+];
+
+// ═══════════════════════════════════════════
+//  URLパラメータ解析
+// ═══════════════════════════════════════════
+var P = new URLSearchParams(window.location.search);
+var CLIENT = {
+  name:    P.get('n')  || '',
+  staff:   P.get('s')  || '',
+  mail:    P.get('m')  || 'info@example.com',
+  tel:     P.get('t')  || '03-0000-0000',
+  hide:    (P.get('hide')||'').split(',').filter(Boolean),
+  docs:    (P.get('docs')||'').split(',').filter(Boolean),
+  // 表示する間取りindex（空=全表示）例: "0,2,3"
+  fpIdx:   (P.get('fp')||'').split(',').filter(Boolean).map(Number),
+  // 間取りごとの上書き値 p0=価格 m0=管理費 r0=修繕 k0=駐車場 o0=その他
+  fpOverrides: (function(){
+    var ov={};
+    [0,1,2,3].forEach(function(i){
+      var price=P.get('p'+i); var mgmt=P.get('m'+i);
+      var repair=P.get('r'+i); var parking=P.get('k'+i); var other=P.get('o'+i);
+      if(price||mgmt||repair||parking||other){
+        ov[i]={};
+        if(price)   ov[i].priceNum=parseInt(price);
+        if(mgmt)    ov[i].mgmt=parseInt(mgmt);
+        if(repair)  ov[i].repair=parseInt(repair);
+        if(parking) ov[i].parking=parseInt(parking);
+        if(other)   ov[i].other=parseInt(other);
+      }
+    });
+    return ov;
+  })(),
+};
+
+
+// ═══════════════════════════════════════════
+//  ナビ
+// ═══════════════════════════════════════════
+var SECS=['top','gallery','video','floorplan','price','map','overview','docs','contact'];
+var galCat='exterior',galIdx=0,priceFilter='all',mapInited=false;
+
+function go(name){
+  SECS.forEach(function(s){
+    var el=document.getElementById('s-'+s);if(el)el.classList.remove('on');
+    var bn=document.getElementById('bn-'+s);if(bn)bn.classList.remove('on');
+  });
+  var sel=document.getElementById('s-'+name);if(sel)sel.classList.add('on');
+  var bn=document.getElementById('bn-'+name);if(bn)bn.classList.add('on');
+  window.scrollTo(0,0);
+  if(name==='map'&&!mapInited)initMap();
+}
+
+// ═══════════════════════════════════════════
+//  コンテンツ出し分け適用
+// ═══════════════════════════════════════════
+function applyPersonalization(){
+  // 顧客バナー
+  if(CLIENT.name){
+    document.getElementById('clientBanner').style.display='block';
+    document.getElementById('clientBannerName').textContent=CLIENT.name;
+    document.getElementById('clientBannerStaff').textContent=
+      CLIENT.staff ? '担当：'+CLIENT.staff : '';
+  }
+  // コンタクト情報
+  if(CLIENT.staff) document.getElementById('contactStaffName').textContent=CLIENT.staff;
+  if(CLIENT.tel){
+    var telBtn=document.getElementById('contactTelBtn');
+    telBtn.href='tel:'+CLIENT.tel.replace(/-/g,'');
+    document.getElementById('contactTelSub').textContent=CLIENT.tel+'　10:00〜18:00（水曜定休）';
+  }
+  if(CLIENT.mail){
+    var mailBtn=document.getElementById('contactMailBtn');
+    mailBtn.href='mailto:'+CLIENT.mail+'?subject=グランドレジデンス　お問い合わせ';
+    document.getElementById('contactMailSub').textContent=CLIENT.mail;
+  }
+
+  // ─── 間取りデータ上書き（URLパラメータから）
+  var hasOverride=Object.keys(CLIENT.fpOverrides).length>0;
+  if(hasOverride){
+    FP=FP_DEFAULT.map(function(def,i){
+      var ov=CLIENT.fpOverrides[i];
+      if(!ov)return Object.assign({},def);
+      var pn=ov.priceNum||def.priceNum;
+      return Object.assign({},def,{
+        priceNum:pn,
+        price:pn.toLocaleString()+'万円〜',
+        fees:{
+          mgmt:    ov.mgmt    != null ? ov.mgmt    : def.fees.mgmt,
+          repair:  ov.repair  != null ? ov.repair  : def.fees.repair,
+          parking: ov.parking != null ? ov.parking : def.fees.parking,
+          other:   ov.other   != null ? ov.other   : def.fees.other,
+        }
+      });
+    });
+    // 再描画
+    renderFP();
+    renderPrice();
+  }
+
+  // ─── 表示する間取りを絞り込む
+  if(CLIENT.fpIdx.length>0){
+    // fp-gridのカードを表示/非表示
+    document.querySelectorAll('#fpGrid .fp-card').forEach(function(card,i){
+      card.style.display=CLIENT.fpIdx.indexOf(i)>=0?'':'none';
+    });
+    // wideクラスも調整（最初の表示対象がwideになるべきか）
+  }
+
+  // セクション非表示
+  var SECTION_MAP={'gallery':'gallery','video':'video','floorplan':'floorplan','price':'price','map':'map','overview':'overview'};
+  CLIENT.hide.forEach(function(h){
+    if(!SECTION_MAP[h])return;
+    var el=document.getElementById('s-'+SECTION_MAP[h]);
+    if(el)el.style.display='none';
+    var tc=document.getElementById('tc-'+h);
+    if(tc)tc.classList.add('hidden');
+    var bn=document.getElementById('bn-'+h);
+    if(bn)bn.classList.add('hidden');
+  });
+
+  // 資料出し分け → renderDocs() で処理
+  renderDocs();
+
+  // 資料マスター（管理タブ用）
+  renderDocMaster();
+}
+
+// ═══════════════════════════════════════════
+//  資料セクション描画
+// ═══════════════════════════════════════════
+function renderDocs(){
+  var target=CLIENT.docs.length>0
+    ? ALL_DOCS.filter(function(d){return CLIENT.docs.indexOf(d.id)>=0;})
+    : ALL_DOCS;
+
+  if(target.length===0){
+    document.getElementById('docsContent').innerHTML='<div class="docs-empty">現在ご提供できる資料はありません。<br>担当者にお問い合わせください。</div>';
+    return;
+  }
+
+  // カテゴリ別にグルーピング
+  var cats={};
+  target.forEach(function(d){
+    if(!cats[d.cat])cats[d.cat]=[];
+    cats[d.cat].push(d);
+  });
+
+  var html='';
+  Object.keys(cats).forEach(function(cat,i){
+    if(i>0)html+='<div class="docs-divider"></div>';
+    html+='<div class="docs-section-title">'+cat+'</div><div class="docs-list">';
+    cats[cat].forEach(function(d){
+      var tagHtml=d.tag==='new'?'<span class="doc-tag new">NEW</span>':d.tag==='limited'?'<span class="doc-tag limited">限定</span>':'';
+      html+='<div class="doc-item" onclick="dlDoc(\''+d.id+'\')">'
+        +'<div class="doc-icon '+d.cls+'">'+d.icon+'</div>'
+        +'<div class="doc-body"><div class="doc-name">'+d.name+tagHtml+'</div><div class="doc-meta">'+d.meta+'</div></div>'
+        +'<button class="doc-dl">DL</button>'
+        +'</div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('docsContent').innerHTML=html;
+}
+
+function dlDoc(id){
+  // 実装時: 資料ファイルのパスに差し替える
+  alert('「'+id+'」\n\nダウンロード機能は実装時にファイルパスを設定してください。');
+}
+
+// ═══════════════════════════════════════════
+//  ギャラリー
+// ═══════════════════════════════════════════
+function renderGal(){
+  var d=GAL[galCat];
+  document.getElementById('galMain').src=d[galIdx].url;
+  document.getElementById('galCapTtl').textContent=d[galIdx].ttl;
+  document.getElementById('galCapSub').textContent=d[galIdx].sub;
+  document.getElementById('galCnt').textContent=(galIdx+1)+' / '+d.length;
+  var tb=document.getElementById('galThumbs');tb.innerHTML='';
+  d.forEach(function(item,i){
+    var div=document.createElement('div');
+    div.className='gal-th'+(i===galIdx?' on':'');
+    div.onclick=(function(idx){return function(){galIdx=idx;renderGal();};})(i);
+    var img=document.createElement('img');img.src=item.url;img.alt=item.ttl;
+    div.appendChild(img);tb.appendChild(div);
+  });
+}
+function switchGalCat(btn,cat){document.querySelectorAll('.gal-tab').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');galCat=cat;galIdx=0;renderGal();}
+function galNav(d){var arr=GAL[galCat];galIdx=(galIdx+d+arr.length)%arr.length;renderGal();}
+
+// VIDEO
+function renderVids(){
+  document.getElementById('vidList').innerHTML=VIDEOS.map(function(v){
+    return'<div class="vid-card"><div class="vid-thumb" onclick="openVid(\''+v.yt+'\')"><img src="'+v.thumb+'" alt="'+v.ttl+'" loading="lazy"><div class="vid-play"><div class="vid-play-btn"><div class="vid-play-ico"></div></div></div></div><div class="vid-info"><div class="vid-ttl">'+v.ttl+'</div><div class="vid-meta">'+v.meta+'</div></div></div>';
+  }).join('');
+}
+function openVid(id){document.getElementById('vidFrame').src='https://www.youtube.com/embed/'+id+'?autoplay=1';document.getElementById('vidModal').classList.add('on');document.body.style.overflow='hidden';}
+function closeVid(){document.getElementById('vidFrame').src='';document.getElementById('vidModal').classList.remove('on');document.body.style.overflow='';}
+
+// FLOOR PLAN
+var compareMode=false;
+var compareSelected=[];
+var currentPlanIndex=-1;
+
+function toggleCompareMode(){
+  compareMode=!compareMode;
+  var btn=document.getElementById('fpCompareToggle');
+  btn.classList.toggle('on',compareMode);
+  btn.textContent=compareMode?'比較モード ON':'比較モード OFF';
+  document.getElementById('fpCompareLabel').textContent=compareMode?'比較するプランを2つ選択':'プランを選んでタップ';
+  compareSelected=[];renderFP();
+}
+
+function renderFP(){
+  document.getElementById('fpGrid').innerHTML=FP.map(function(p,i){
+    var isSel=compareSelected.indexOf(i)>=0;
+    var selNum=compareMode&&isSel?'<div style="position:absolute;top:7px;right:7px;background:var(--gold);color:var(--black);font-family:Cinzel,serif;font-size:8px;padding:2px 7px;">'+(compareSelected.indexOf(i)+1)+'</div>':'';
+    return'<div class="fp-card'+(i===0?' wide':'')+(compareMode&&isSel?' compare-selected':'')+'" onclick="tapFP('+i+')">'
+      +'<div class="fp-svg-wrap">'+p.svg+'</div>'
+      +'<div class="fp-info"><div class="fp-type">'+p.type+'</div><div class="fp-meta"><div class="fp-meta-item">'+p.area+'㎡</div><div class="fp-meta-item">'+p.floor+'</div></div><div class="fp-price">'+p.price+'<small>（予定）</small></div></div>'
+      +(p.tag?'<div class="fp-badge">'+p.tag+'</div>':'')
+      +selNum+'</div>';
+  }).join('');
+}
+
+function tapFP(i){
+  if(compareMode){
+    var idx=compareSelected.indexOf(i);
+    if(idx>=0)compareSelected.splice(idx,1);
+    else if(compareSelected.length<2)compareSelected.push(i);
+    if(compareSelected.length===2)openCmp();
+    else renderFP();
+  } else {
+    openFP(i);
+  }
+}
+
+function openFP(i){
+  currentPlanIndex=i;
+  var p=FP[i];
+  document.getElementById('fpModalTtl').textContent=p.type+' — '+p.area+'㎡';
+  var sw=document.getElementById('fpModalSvg');
+  sw.innerHTML=p.svg+'<div class="fp-zoom-hint" id="fpZoomHint">タップで拡大</div>';
+  sw.classList.remove('zoomed');
+  document.getElementById('fpModalSpecs').innerHTML=p.specs.map(function(s){
+    return'<div class="fp-spec"><div class="fp-spec-lbl">'+s.l+'</div><div class="fp-spec-val">'+s.v+'</div><div class="fp-spec-unit">'+s.u+'</div></div>';
+  }).join('');
+  document.getElementById('fpModal').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+
+function closeFP(){document.getElementById('fpModal').classList.remove('on');document.body.style.overflow='';}
+
+function toggleZoom(wrap){
+  wrap.classList.toggle('zoomed');
+  var hint=document.getElementById('fpZoomHint');
+  if(hint)hint.textContent=wrap.classList.contains('zoomed')?'タップで縮小':'タップで拡大';
+}
+
+function openCmp(){
+  renderFP();
+  function fillCol(col,p){
+    document.getElementById('cmpType'+col).textContent=p.type+' '+p.area+'㎡';
+    var sw=document.getElementById('cmpSvg'+col);
+    sw.innerHTML=p.svg;sw.classList.remove('zoomed');
+    document.getElementById('cmpSpecs'+col).innerHTML=
+      '<div class="fp-cmp-spec-row"><span class="fp-cmp-spec-lbl">専有面積</span><span class="fp-cmp-spec-val">'+p.area+'㎡</span></div>'
+      +'<div class="fp-cmp-spec-row"><span class="fp-cmp-spec-lbl">価格帯</span><span class="fp-cmp-spec-val">'+p.price+'</span></div>'
+      +'<div class="fp-cmp-spec-row"><span class="fp-cmp-spec-lbl">バルコニー</span><span class="fp-cmp-spec-val">'+p.specs[2].v+'㎡</span></div>'
+      +'<div class="fp-cmp-spec-row"><span class="fp-cmp-spec-lbl">階数</span><span class="fp-cmp-spec-val">'+p.floor+'</span></div>';
+  }
+  fillCol('A',FP[compareSelected[0]]);
+  fillCol('B',FP[compareSelected[1]]);
+  document.getElementById('fpCmpModal').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+
+function closeCmp(){
+  document.getElementById('fpCmpModal').classList.remove('on');
+  document.body.style.overflow='';
+  compareSelected=[];renderFP();
+}
+
+function toggleCmpZoom(col){
+  document.getElementById('cmpSvg'+col).classList.toggle('zoomed');
+}
+
+function openLoanFromCmp(col){openLoanWithPlan(compareSelected[col==='A'?0:1]);}
+function openLoanFromPlan(){openLoanWithPlan(currentPlanIndex);}
+
+
+// PRICE
+function renderPrice(){
+  var sLabel={avail:'販売中',sold:'成約済',reserved:'予約中'};
+  var f=PRICE_DATA.filter(function(r){if(priceFilter==='all')return true;if(priceFilter==='avail')return r.status==='avail';return r.type.toLowerCase().replace(' ','')===priceFilter;});
+  document.getElementById('priceTbody').innerHTML=f.map(function(r){return'<tr><td class="gold">'+r.no+'</td><td class="num">'+r.floor+'</td><td>'+r.type+'</td><td class="num">'+r.area+'</td><td>'+r.balc+'</td><td class="num">'+r.price+'</td><td>'+r.mgmt+'</td><td><span class="p-status '+r.status+'">'+sLabel[r.status]+'</span></td></tr>';}).join('');
+}
+function filterPrice(btn,f){document.querySelectorAll('.pf-btn').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');priceFilter=f;renderPrice();}
+
+// ═══════════════════════════════════════════
+//  販売状況表
+// ═══════════════════════════════════════════
+var statusFilter='all';
+var statusTypeFilter='all';
+var currentUnit=null;
+
+// フロア×住戸の列定義（住戸番号末尾2桁で列を決定）
+function getUnitCol(no){
+  // 末尾2桁が列ID（01,02,03...）
+  return parseInt(no.slice(-2));
+}
+
+function renderStatusTable(){
+  var data=PRICE_DATA;
+  // フィルター適用
+  var filtered=data.filter(function(u){
+    var statusOk=statusFilter==='all'||u.status===statusFilter;
+    var typeOk=statusTypeFilter==='all'||u.type===statusTypeFilter;
+    return statusOk||typeOk; // 非表示は薄くする（完全除外しない）
+  });
+
+  // 全住戸から列（末尾2桁）を収集してユニーク化、昇順ソート
+  var allCols=[];
+  data.forEach(function(u){
+    var c=getUnitCol(u.no);
+    if(allCols.indexOf(c)<0)allCols.push(c);
+  });
+  allCols.sort(function(a,b){return a-b;});
+
+  // 全フロアを収集して降順ソート（上階が上に来るように）
+  var allFloors=[];
+  data.forEach(function(u){
+    if(allFloors.indexOf(u.floor)<0)allFloors.push(u.floor);
+  });
+  allFloors.sort(function(a,b){return b-a;});
+
+  // フロア×列のマップを作成
+  var unitMap={};
+  data.forEach(function(u){
+    var key=u.floor+'_'+getUnitCol(u.no);
+    unitMap[key]=u;
+  });
+
+  // ヘッダー描画
+  var thead=document.getElementById('statusTableHead');
+  var headHtml='<tr><th class="floor-head">階</th>';
+  allCols.forEach(function(c){
+    // 列に何かある場合のみ表示
+    var hasAny=allFloors.some(function(f){return unitMap[f+'_'+c];});
+    if(hasAny) headHtml+='<th>'+String(c).padStart(2,'0')+'号室系</th>';
+  });
+  headHtml+='</tr>';
+  thead.innerHTML=headHtml;
+
+  // ボディ描画
+  var statusLabel={avail:'販売中',reserved:'予約中',sold:'成約済'};
+  var tbody=document.getElementById('statusTableBody');
+  var bodyHtml='';
+  allFloors.forEach(function(floor){
+    bodyHtml+='<tr>';
+    // 階ラベル
+    bodyHtml+='<td class="status-floor-label">'+floor+'<span>F</span></td>';
+    allCols.forEach(function(c){
+      var hasAny=allFloors.some(function(f){return unitMap[f+'_'+c];});
+      if(!hasAny)return;
+      var u=unitMap[floor+'_'+c];
+      if(!u){
+        bodyHtml+='<td class="status-cell"><div style="min-width:80px;height:80px;"></div></td>';
+        return;
+      }
+      // フィルター判定
+      var statusMatch=statusFilter==='all'||u.status===statusFilter;
+      var typeMatch=statusTypeFilter==='all'||u.type===statusTypeFilter;
+      var isHidden=!(statusMatch&&typeMatch);
+      bodyHtml+='<td class="status-cell">'
+        +'<div class="status-unit '+u.status+(isHidden?' status-unit-hidden':'')+'" onclick="openUnitModal(''+u.no+'')">'
+          +'<div class="status-unit-no">'+u.no+'</div>'
+          +'<div class="status-unit-type">'+u.type+'</div>'
+          +'<div class="status-unit-area">'+u.area+'㎡</div>'
+          +'<div class="status-unit-price">'+u.price+'万</div>'
+          +'<div class="status-unit-badge '+u.status+'">'+statusLabel[u.status]+'</div>'
+        +'</div>'
+      +'</td>';
+    });
+    bodyHtml+='</tr>';
+  });
+  tbody.innerHTML=bodyHtml;
+
+  // サマリー
+  var total=data.length;
+  var avail=data.filter(function(u){return u.status==='avail';}).length;
+  var reserved=data.filter(function(u){return u.status==='reserved';}).length;
+  var sold=data.filter(function(u){return u.status==='sold';}).length;
+  document.getElementById('statusSummary').innerHTML=
+    '<div class="status-summary-item"><div class="status-summary-num">'+total+'</div><div class="status-summary-label">総戸数</div></div>'
+    +'<div class="status-summary-item" style="border-left:2px solid var(--green);"><div class="status-summary-num" style="color:var(--green);">'+avail+'</div><div class="status-summary-label">販売中</div></div>'
+    +'<div class="status-summary-item" style="border-left:2px solid var(--blue);"><div class="status-summary-num" style="color:var(--blue);">'+reserved+'</div><div class="status-summary-label">予約中</div></div>'
+    +'<div class="status-summary-item" style="border-left:2px solid rgba(255,255,255,.15);"><div class="status-summary-num" style="color:var(--gray);">'+sold+'</div><div class="status-summary-label">成約済</div></div>';
+}
+
+function filterStatus(btn,f){
+  document.querySelectorAll('.status-filter-btn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  statusFilter=f;
+  renderStatusTable();
+}
+
+function filterType(btn,t){
+  document.querySelectorAll('.status-type-btn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  statusTypeFilter=t;
+  renderStatusTable();
+}
+
+// タブ切替
+function switchFpTab(tab){
+  document.querySelectorAll('.fp-page-tab').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('fpt-'+tab).classList.add('on');
+  document.getElementById('fp-status-view').style.display=tab==='status'?'':'none';
+  document.getElementById('fp-plan-view').style.display=tab==='plan'?'':'none';
+  if(tab==='status')renderStatusTable();
+}
+
+// 住戸詳細モーダル
+function openUnitModal(no){
+  var u=PRICE_DATA.filter(function(x){return x.no===no;})[0];
+  if(!u)return;
+  currentUnit=u;
+  var statusLabel={avail:'販売中 ●',reserved:'予約中 ●',sold:'成約済'};
+  var statusColor={avail:'var(--green)',reserved:'var(--blue)',sold:'var(--gray)'};
+  document.getElementById('unitModalNo').textContent=u.no+'号室';
+  document.getElementById('unitModalType').textContent=u.type;
+  document.getElementById('unitModalFloor').textContent=u.floor+'階';
+  document.getElementById('unitModalTypeVal').textContent=u.type;
+  document.getElementById('unitModalArea').textContent=u.area+'㎡';
+  document.getElementById('unitModalBalc').textContent=u.balc+'㎡';
+  document.getElementById('unitModalPrice').textContent=u.price+'万円';
+  document.getElementById('unitModalMgmt').textContent=Number(u.mgmt).toLocaleString()+'円/月';
+  var stEl=document.getElementById('unitModalStatus');
+  stEl.textContent=statusLabel[u.status];
+  stEl.style.color=statusColor[u.status];
+  document.getElementById('unitModal').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+
+function closeUnitModal(){
+  document.getElementById('unitModal').classList.remove('on');
+  document.body.style.overflow='';
+  currentUnit=null;
+}
+
+function openLoanFromUnit(){
+  if(!currentUnit)return;
+  // 該当タイプのFPインデックスを探す
+  var fpIdx=-1;
+  FP.forEach(function(p,i){if(p.type===currentUnit.type)fpIdx=i;});
+  closeUnitModal();
+  // 価格を住戸の実際の価格に上書き
+  openLoanWithPlan(fpIdx);
+  var priceNum=parseInt(currentUnit.price.replace(/,/g,''));
+  if(priceNum){
+    document.getElementById('loanPrice').value=priceNum;
+    var down=parseInt(document.getElementById('loanDown').value)||0;
+    document.getElementById('loanAmount').value=Math.max(0,priceNum-down);
+    calcLoan();
+  }
+}
+
+
+// ═══════════════════════════════════════════
+//  LOAN SIMULATOR
+// ═══════════════════════════════════════════
+var bonusOn=false;
+
+function openLoan(){openLoanWithPlan(-1);}
+
+function openLoanWithPlan(idx){
+  var planTag=document.getElementById('loanPlanTag');
+  if(idx>=0 && FP[idx]){
+    var p=FP[idx];
+    // 物件価格セット
+    document.getElementById('loanPrice').value=p.priceNum;
+    var down=parseInt(document.getElementById('loanDown').value)||0;
+    document.getElementById('loanAmount').value=Math.max(0,p.priceNum-down);
+    // 管理費等セット
+    document.getElementById('feeMgmt').value=p.fees.mgmt;
+    document.getElementById('feeRepair').value=p.fees.repair;
+    document.getElementById('feeParking').value=p.fees.parking;
+    document.getElementById('feeOther').value=p.fees.other;
+    // プランタグ
+    planTag.textContent=p.type+' — '+p.area+'㎡';
+    planTag.style.display='inline-flex';
+  } else {
+    planTag.style.display='none';
+  }
+  document.getElementById('loanModal').classList.add('on');
+  document.body.style.overflow='hidden';
+  calcLoan();
+}
+
+function closeLoan(){
+  document.getElementById('loanModal').classList.remove('on');
+  document.body.style.overflow='';
+}
+
+function toggleBonus(){
+  bonusOn=!bonusOn;
+  document.getElementById('bonusSwitch').classList.toggle('on',bonusOn);
+  document.getElementById('bonusFields').classList.toggle('on',bonusOn);
+  calcLoan();
+}
+
+function syncLoanAmount(){
+  var price=parseInt(document.getElementById('loanPrice').value)||0;
+  var down=parseInt(document.getElementById('loanDown').value)||0;
+  document.getElementById('loanAmount').value=Math.max(0,price-down);
+}
+
+function fmt(n){return Math.round(n).toLocaleString();}
+function fmtMan(n){return (n/10000).toFixed(1);}  // 円→万円
+
+function calcLoan(){
+  var P=parseInt(document.getElementById('loanAmount').value)||0;  // 万円
+  var years=parseInt(document.getElementById('loanYear').value)||35;
+  var rate=parseFloat(document.getElementById('loanRate').value)||1.5;
+  var bonusPer=bonusOn?(parseInt(document.getElementById('loanBonus').value)||0):0;
+  var bonusTimes=bonusOn?(parseInt(document.getElementById('loanBonusTimes').value)||2):0;
+
+  // 管理費等（円）
+  var mgmt=parseInt(document.getElementById('feeMgmt').value)||0;
+  var repair=parseInt(document.getElementById('feeRepair').value)||0;
+  var parking=parseInt(document.getElementById('feeParking').value)||0;
+  var other=parseInt(document.getElementById('feeOther').value)||0;
+  var feesTotal=mgmt+repair+parking+other;
+
+  if(P<=0){
+    document.getElementById('loanMonthly').textContent='—';
+    document.getElementById('loanTotalMonthly').textContent='—';
+    return;
+  }
+
+  // ボーナス払い分を主借入から分離
+  var bonusTotalAll=bonusPer*bonusTimes*years;
+  var mainPrin=Math.max(0,P-bonusTotalAll);
+  var r=rate/100/12;
+  var n=years*12;
+  var monthly; // 万円
+  if(r<0.000001){monthly=mainPrin/n;}
+  else{var pow=Math.pow(1+r,n);monthly=mainPrin*10000*r*pow/(pow-1)/10000;}
+
+  var totalPay=monthly*n+bonusTotalAll;
+  var totalInt=Math.max(0,totalPay-P);
+  var feesTotalMan=feesTotal/10000;
+  var grandTotal=monthly+feesTotalMan;
+
+  // ローン返済額
+  document.getElementById('loanMonthly').textContent=monthly.toFixed(1);
+  var subTxt=bonusOn?'＋ボーナス月 '+bonusPer+'万円×'+bonusTimes+'回/年':'通常月払いのみ';
+  document.getElementById('loanMonthlySub').textContent=subTxt;
+
+  // 管理費等内訳
+  var feeItems=[
+    {name:'管理費',val:mgmt},
+    {name:'修繕積立金',val:repair},
+    {name:'駐車場使用料',val:parking},
+    {name:'その他',val:other},
+  ];
+  document.getElementById('loanFeesBreakdown').innerHTML=
+    feeItems.map(function(f){
+      var isZero=f.val===0;
+      return'<div class="loan-fee-row">'
+        +'<span class="loan-fee-row-name">'+f.name+'</span>'
+        +'<span class="loan-fee-row-val'+(isZero?' zero':'')+'">'+fmt(f.val)+'<small style="font-size:9px;margin-left:2px;color:var(--gray);">円</small></span>'
+        +'</div>';
+    }).join('')
+    +'<div class="loan-fee-row" style="border-top:1px solid rgba(255,255,255,.06);padding-top:6px;margin-top:2px;">'
+      +'<span class="loan-fee-row-name" style="color:var(--gray-l);">小計</span>'
+      +'<span class="loan-fee-row-val">'+fmt(feesTotal)+'<small style="font-size:9px;margin-left:2px;color:var(--gray);">円</small></span>'
+    +'</div>';
+
+  // 月々合計
+  document.getElementById('loanTotalMonthly').textContent=grandTotal.toFixed(1);
+  var bonusMonthAvg=bonusOn?(bonusPer*bonusTimes/12).toFixed(1):null;
+  document.getElementById('loanTotalSub').innerHTML=
+    'ローン '+monthly.toFixed(1)+'万 ＋ 管理費等 '+feesTotalMan.toFixed(1)+'万'
+    +(bonusOn?'<br><span style="font-size:9px;">※ボーナス月は+'+bonusPer+'万円加算</span>':'');
+
+  // 詳細
+  document.getElementById('loanTotalAmt').textContent=fmt(P);
+  document.getElementById('loanTotalPay').textContent=fmt(totalPay);
+  document.getElementById('loanTotalInt').textContent=fmt(totalInt);
+  document.getElementById('loanBonusAmt').textContent=bonusOn?bonusPer+'':'0';
+}
+
+
+// ═══════════════════════════════════════════
+//  管理パネル
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+//  管理画面 物件データ編集
+// ═══════════════════════════════════════════
+function renderAdmPlans(){
+  var container=document.getElementById('admPlansList');
+  if(!container)return;
+  // URL生成タブの間取りチェックボックスも生成
+  var fpChecks=document.getElementById('admFpChecks');
+  if(fpChecks){
+    fpChecks.innerHTML=FP_DEFAULT.map(function(p,i){
+      return'<label class="adm-check">'
+        +'<input type="checkbox" id="adm-fp-show-'+i+'" checked onchange="buildUrl()">'
+        +'<span>'+p.type+'（'+p.area+'㎡）</span>'
+        +'</label>';
+    }).join('');
+  }
+
+  container.innerHTML=FP.map(function(p,i){
+    return '<div class="adm-plan-card" id="adm-plan-card-'+i+'">'
+      +'<div class="adm-plan-card-head" onclick="toggleAdmPlanCard('+i+')">'
+        +'<div>'
+          +'<div class="adm-plan-card-type">'+p.type+'</div>'
+          +'<div class="adm-plan-card-price">'+p.priceNum.toLocaleString()+'万円〜 / '+p.area+'㎡</div>'
+        +'</div>'
+        +'<div class="adm-plan-card-toggle" id="adm-plan-toggle-'+i+'">›</div>'
+      +'</div>'
+      +'<div class="adm-plan-card-body'+(i===0?' open':'')+'" id="adm-plan-body-'+i+'">'
+
+        // 価格・面積・階数
+        +'<div class="adm-plan-sub-title">基本情報</div>'
+        +'<div class="adm-grid3">'
+          +'<div class="adm-plan-field">'
+            +'<label class="adm-plan-label">価格（万円〜）</label>'
+            +'<input class="adm-plan-input" type="number" id="adm-price-'+i+'" value="'+p.priceNum+'" min="100" step="100">'
+            +'<div class="adm-plan-input-unit">万円</div>'
+          +'</div>'
+          +'<div class="adm-plan-field">'
+            +'<label class="adm-plan-label">専有面積（㎡）</label>'
+            +'<input class="adm-plan-input" type="number" id="adm-area-'+i+'" value="'+p.area+'" step="0.01">'
+            +'<div class="adm-plan-input-unit">㎡</div>'
+          +'</div>'
+          +'<div class="adm-plan-field">'
+            +'<label class="adm-plan-label">対象階</label>'
+            +'<input class="adm-plan-input" type="text" id="adm-floor-'+i+'" value="'+p.floor+'" style="font-family:'Noto Sans JP',sans-serif;font-size:12px;text-align:left;">'
+            +'<div class="adm-plan-input-unit">例: 5〜12階</div>'
+          +'</div>'
+        +'</div>'
+
+        // 管理費等
+        +'<div class="adm-plan-sub-title">管理費等（月額・円）</div>'
+        +'<div class="adm-grid2">'
+          +'<div class="adm-plan-field">'
+            +'<label class="adm-plan-label">管理費</label>'
+            +'<input class="adm-plan-input" type="number" id="adm-mgmt-'+i+'" value="'+p.fees.mgmt+'" step="100">'
+            +'<div class="adm-plan-input-unit">円/月</div>'
+          +'</div>'
+          +'<div class="adm-plan-field">'
+            +'<label class="adm-plan-label">修繕積立金</label>'
+            +'<input class="adm-plan-input" type="number" id="adm-repair-'+i+'" value="'+p.fees.repair+'" step="100">'
+            +'<div class="adm-plan-input-unit">円/月</div>'
+          +'</div>'
+          +'<div class="adm-plan-field">'
+            +'<label class="adm-plan-label">駐車場使用料</label>'
+            +'<input class="adm-plan-input" type="number" id="adm-parking-'+i+'" value="'+p.fees.parking+'" step="100">'
+            +'<div class="adm-plan-input-unit">円/月</div>'
+          +'</div>'
+          +'<div class="adm-plan-field">'
+            +'<label class="adm-plan-label">その他</label>'
+            +'<input class="adm-plan-input" type="number" id="adm-other-'+i+'" value="'+p.fees.other+'" step="100">'
+            +'<div class="adm-plan-input-unit">円/月</div>'
+          +'</div>'
+        +'</div>'
+
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function toggleAdmPlanCard(i){
+  var body=document.getElementById('adm-plan-body-'+i);
+  var tog=document.getElementById('adm-plan-toggle-'+i);
+  var isOpen=body.classList.toggle('open');
+  tog.style.transform=isOpen?'rotate(90deg)':'';
+}
+
+function savePlans(){
+  var data=FP.map(function(p,i){
+    var priceNum=parseInt(document.getElementById('adm-price-'+i).value)||p.priceNum;
+    var area=document.getElementById('adm-area-'+i).value||p.area;
+    var floor=document.getElementById('adm-floor-'+i).value||p.floor;
+    var mgmt=parseInt(document.getElementById('adm-mgmt-'+i).value)||0;
+    var repair=parseInt(document.getElementById('adm-repair-'+i).value)||0;
+    var parking=parseInt(document.getElementById('adm-parking-'+i).value)||0;
+    var other=parseInt(document.getElementById('adm-other-'+i).value)||0;
+    return {priceNum:priceNum,area:area,floor:floor,fees:{mgmt:mgmt,repair:repair,parking:parking,other:other}};
+  });
+  try{
+    localStorage.setItem('gr_fp_data',JSON.stringify(data));
+    // FP配列をリアルタイム更新
+    FP=loadFP();
+    // 価格表・間取りグリッドを再描画
+    renderFP();
+    renderPrice();
+    // 保存ステータス表示
+    buildUrl();  // URLを自動更新
+    var st=document.getElementById('admSaveStatus');
+    st.textContent='✓ 保存しました。URL生成タブのURLが更新されています。';
+    st.style.opacity='1';
+    setTimeout(function(){st.style.opacity='0';},2500);
+  }catch(e){alert('保存に失敗しました: '+e);}
+}
+
+function resetPlans(){
+  if(!confirm('すべての変更を初期値に戻しますか？')){return;}
+  localStorage.removeItem('gr_fp_data');
+  FP=loadFP();
+  renderFP();
+  renderPrice();
+  renderAdmPlans();
+  var st=document.getElementById('admSaveStatus');
+  st.textContent='✓ 初期値に戻しました';
+  st.style.opacity='1';
+  setTimeout(function(){st.style.opacity='0';},2500);
+}
+
+function toggleAdmin(){
+  var p=document.getElementById('adminPanel');
+  p.classList.toggle('on');
+  document.getElementById('adminBtn').classList.toggle('on',p.classList.contains('on'));
+  if(p.classList.contains('on')){
+    buildUrl();renderDocMaster();renderAdmPlans();
+    document.body.style.overflow='hidden';
+  } else {
+    document.body.style.overflow='';
+  }
+}
+function closeAdmin(){document.getElementById('adminPanel').classList.remove('on');document.getElementById('adminBtn').classList.remove('on');document.body.style.overflow='';}
+
+function switchAdmTab(btn,pane){
+  document.querySelectorAll('.admin-tab').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('.admin-tab-pane').forEach(function(p){p.classList.remove('on');});
+  btn.classList.add('on');
+  document.getElementById('adm-'+pane).classList.add('on');
+}
+
+// URL生成
+function buildUrl(){
+  var base=window.location.origin+window.location.pathname;
+  var params=new URLSearchParams();
+
+  // ── 顧客情報
+  var n=document.getElementById('admName').value.trim();
+  var s=document.getElementById('admStaff').value.trim();
+  var m=document.getElementById('admMail').value.trim();
+  var t=document.getElementById('admTel').value.trim();
+  if(n)params.set('n',n);
+  if(s)params.set('s',s);
+  if(m)params.set('m',m);
+  if(t)params.set('t',t);
+
+  // ── 表示セクション
+  var scIds=['gallery','video','floorplan','price','map','overview'];
+  var hidden=[];
+  scIds.forEach(function(id){
+    var cb=document.getElementById('sc-'+id);
+    if(cb&&!cb.checked)hidden.push(id);
+  });
+  if(hidden.length)params.set('hide',hidden.join(','));
+
+  // ── 表示する間取り（チェックなしを除外）
+  var fpVisible=[];
+  FP_DEFAULT.forEach(function(p,i){
+    var cb=document.getElementById('adm-fp-show-'+i);
+    if(cb&&cb.checked)fpVisible.push(i);
+  });
+  // 全表示の場合はパラメータ省略
+  if(fpVisible.length>0 && fpVisible.length<FP_DEFAULT.length){
+    params.set('fp',fpVisible.join(','));
+  }
+
+  // ── 間取りごとの価格・管理費（デフォルトと異なる値のみ埋め込む）
+  FP_DEFAULT.forEach(function(def,i){
+    var pEl=document.getElementById('adm-price-'+i);
+    var mEl=document.getElementById('adm-mgmt-'+i);
+    var rEl=document.getElementById('adm-repair-'+i);
+    var kEl=document.getElementById('adm-parking-'+i);
+    var oEl=document.getElementById('adm-other-'+i);
+    if(!pEl)return;
+    var pv=parseInt(pEl.value)||def.priceNum;
+    var mv=parseInt(mEl.value)||def.fees.mgmt;
+    var rv=parseInt(rEl.value)||def.fees.repair;
+    var kv=parseInt(kEl.value)||def.fees.parking;
+    var ov=parseInt(oEl.value)||def.fees.other;
+    // デフォルトと違う値があればURLに含める
+    if(pv!==def.priceNum)params.set('p'+i,pv);
+    if(mv!==def.fees.mgmt)params.set('m'+i,mv);
+    if(rv!==def.fees.repair)params.set('r'+i,rv);
+    if(kv!==def.fees.parking)params.set('k'+i,kv);
+    if(ov!==def.fees.other)params.set('o'+i,ov);
+  });
+
+  // ── 資料チェック
+  var docChecks=document.querySelectorAll('.adm-doc-check');
+  var selectedDocs=[];
+  docChecks.forEach(function(cb){if(cb.checked)selectedDocs.push(cb.dataset.id);});
+  if(selectedDocs.length>0 && selectedDocs.length<ALL_DOCS.length){
+    params.set('docs',selectedDocs.join(','));
+  }
+
+  var url=base+(params.toString()?'?'+params.toString():'');
+  document.getElementById('admUrlOutput').textContent=url;
+  return url;
+}
+
+function copyAdmUrl(){
+  var url=document.getElementById('admUrlOutput').textContent;
+  navigator.clipboard.writeText(url).then(function(){
+    alert('URLをコピーしました');
+  }).catch(function(){
+    var ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    alert('URLをコピーしました');
+  });
+}
+
+// 資料チェックボックス生成
+function renderDocMaster(){
+  // URL生成タブの資料チェック
+  var checkEl=document.getElementById('admDocChecks');
+  if(checkEl&&checkEl.children.length===0){
+    checkEl.innerHTML=ALL_DOCS.map(function(d){
+      return'<div>'
+        +'<label class="adm-check"><input type="checkbox" class="adm-doc-check" data-id="'+d.id+'" checked onchange="buildUrl()"><span>'+d.name+'</span></label>'
+        +'<div class="adm-check-desc">ID: '+d.id+' | '+d.cat+'</div>'
+        +'</div>';
+    }).join('');
+  }
+  // 資料マスタータブ
+  var master=document.getElementById('docMasterList');
+  if(master){
+    master.innerHTML=ALL_DOCS.map(function(d){
+      return'<div class="doc-master-item">'
+        +'<div class="doc-master-drag">⠿</div>'
+        +'<div class="doc-master-info"><div class="doc-master-name">'+d.icon+' '+d.name+'</div><div class="doc-master-cat">'+d.cat+' | '+d.meta+'</div></div>'
+        +'<div class="doc-master-id">'+d.id+'</div>'
+        +'</div>';
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════════
+//  QRコード生成（ライブラリなしの簡易版）
+// ═══════════════════════════════════════════
+function genQR(){
+  var url=document.getElementById('admUrlOutput').textContent;
+  if(!url||url==='—'){document.getElementById('qrStatus').textContent='先にURLを生成してください';return;}
+  // QRコード生成: 外部サービスを canvas に描画
+  var canvas=document.getElementById('qrCanvas');
+  var ctx=canvas.getContext('2d');
+  var size=200;
+  canvas.width=size;canvas.height=size;
+  ctx.fillStyle='#F5F4EE';ctx.fillRect(0,0,size,size);
+  // Google Charts QR API (外部サービス)
+  var img=new Image();
+  img.crossOrigin='anonymous';
+  img.onload=function(){ctx.drawImage(img,0,0,size,size);document.getElementById('qrStatus').textContent='QRコード生成完了';};
+  img.onerror=function(){
+    ctx.fillStyle='#1A1A1A';ctx.fillRect(10,10,180,180);
+    ctx.fillStyle='#C8B89A';ctx.font='11px Cinzel,serif';ctx.textAlign='center';
+    ctx.fillText('QR生成にはネット接続が必要です',100,105);
+    document.getElementById('qrStatus').textContent='オフライン環境ではURLをそのままコピーしてください';
+  };
+  img.src='https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl='+encodeURIComponent(url)+'&choe=UTF-8';
+}
+
+function downloadQR(){
+  var canvas=document.getElementById('qrCanvas');
+  var a=document.createElement('a');
+  a.download='grand-residence-qr.png';
+  a.href=canvas.toDataURL('image/png');
+  a.click();
+}
+
+// ═══════════════════════════════════════════
+//  モーダルクローズ
+// ═══════════════════════════════════════════
+document.getElementById('fpModal').addEventListener('click',function(e){if(e.target===this)closeFP();});
+document.getElementById('unitModal').addEventListener('click',function(e){if(e.target===this)closeUnitModal();});
+document.getElementById('fpCmpModal').addEventListener('click',function(e){if(e.target===this)closeCmp();});
+document.getElementById('loanModal').addEventListener('click',function(e){if(e.target===this)closeLoan();});
+document.getElementById('fpCmpModal').addEventListener('click',function(e){if(e.target===this)closeCmp();});
+document.getElementById('loanModal').addEventListener('click',function(e){if(e.target===this)closeLoan();});
+document.getElementById('vidModal').addEventListener('click',function(e){if(e.target===this)closeVid();});
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',function(){
+  // ローン入力連動
+  ['loanPrice','loanDown'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.addEventListener('input',function(){syncLoanAmount();calcLoan();});
+  });
+  document.getElementById('loanAmount').addEventListener('input',calcLoan);
+  // スライダー
+  var yr=document.getElementById('loanYear');
+  if(yr)yr.addEventListener('input',function(){document.getElementById('loanYearLabel').textContent=this.value+'年';calcLoan();});
+  var rt=document.getElementById('loanRate');
+  if(rt)rt.addEventListener('input',function(){document.getElementById('loanRateLabel').textContent=parseFloat(this.value).toFixed(2)+'%';calcLoan();});
+  // ボーナス・管理費
+  ['loanBonus','loanBonusTimes','feeMgmt','feeRepair','feeParking','feeOther'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.addEventListener('input',calcLoan);
+  });
+  renderGal();renderVids();renderFP();renderPrice();renderStatusTable();
+  applyPersonalization();
+});
+</script>
+</body>
+</html>
