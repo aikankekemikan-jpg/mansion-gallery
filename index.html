@@ -61,6 +61,226 @@ html,body{background:var(--black);color:var(--white);font-family:'Noto Sans JP',
 .pg-head-jp{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:.05em;color:var(--white);}
 .gold-rule{height:1px;margin:0 20px 22px;background:linear-gradient(to right,var(--gold),rgba(200,184,154,.08));opacity:.55;}
 
+
+/* ══ MYPAGE (顧客専用) ══ */
+.mypage-wrap{display:none;} /* URLに?nがある時のみJS で表示 */
+
+/* ウェルカムヒーロー */
+.myp-hero{
+  position:relative;
+  min-height:100svh;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  overflow:hidden;
+}
+.myp-hero-bg{
+  position:absolute;inset:0;
+  background:url('https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1400&q=85') center/cover no-repeat;
+}
+.myp-hero-bg::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(
+    to bottom,
+    rgba(28,28,30,.15) 0%,
+    rgba(28,28,30,.5)  40%,
+    rgba(28,28,30,.95) 80%,
+    var(--black) 100%
+  );
+}
+.myp-hero-body{position:relative;padding:0 24px 36px;}
+
+/* 物件名 */
+.myp-property{
+  font-family:'Cinzel',serif;font-size:8px;
+  letter-spacing:.6em;color:var(--gold);
+  text-transform:uppercase;margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.myp-property::before{content:'';width:24px;height:1px;background:var(--gold);}
+
+/* ウェルカム文 */
+.myp-welcome{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(13px,3.5vw,17px);font-weight:300;
+  color:var(--gray-l);letter-spacing:.12em;
+  margin-bottom:6px;line-height:1.5;
+}
+.myp-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(34px,9vw,56px);font-weight:300;
+  color:var(--white);letter-spacing:.04em;
+  line-height:1.05;margin-bottom:4px;
+}
+.myp-name em{color:var(--gold);font-style:normal;}
+.myp-name-suffix{
+  font-family:'Noto Serif JP',serif;
+  font-size:clamp(18px,4.5vw,26px);font-weight:300;
+  color:var(--white);letter-spacing:.2em;
+}
+.myp-tagline{
+  font-size:11px;color:var(--gray);
+  letter-spacing:.15em;margin-top:12px;
+  line-height:1.7;
+}
+
+/* スクロールCTA */
+.myp-scroll{
+  display:flex;align-items:center;gap:10px;
+  margin-top:22px;cursor:pointer;
+  animation:myp-pulse 2.5s ease-in-out infinite;
+}
+@keyframes myp-pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.myp-scroll-line{width:32px;height:1px;background:var(--gold);}
+.myp-scroll-txt{
+  font-family:'Cinzel',serif;font-size:8px;
+  letter-spacing:.45em;color:var(--gold);text-transform:uppercase;
+}
+
+/* 担当者カード */
+.myp-staff{
+  position:relative;
+  margin:0 20px;
+  background:linear-gradient(135deg,rgba(200,184,154,.12),rgba(200,184,154,.04));
+  border:1px solid rgba(200,184,154,.22);
+  border-radius:4px;padding:16px 18px;
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:28px;
+}
+.myp-staff-avatar{
+  width:48px;height:48px;border-radius:50%;flex-shrink:0;
+  background:var(--d3);border:1.5px solid rgba(200,184,154,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+}
+.myp-staff-label{
+  font-family:'Cinzel',serif;font-size:7px;
+  letter-spacing:.45em;color:var(--gold);
+  text-transform:uppercase;margin-bottom:4px;
+}
+.myp-staff-name{
+  font-family:'Noto Serif JP',serif;font-size:16px;
+  color:var(--white);letter-spacing:.1em;margin-bottom:2px;
+}
+.myp-staff-msg{
+  font-size:10px;color:var(--gray);
+  letter-spacing:.06em;line-height:1.6;margin-top:4px;
+}
+
+/* セクションラベル */
+.myp-section-label{
+  font-family:'Cinzel',serif;font-size:8px;
+  letter-spacing:.55em;color:rgba(200,184,154,.45);
+  text-transform:uppercase;padding:0 20px;
+  margin-bottom:12px;
+  display:flex;align-items:center;gap:10px;
+}
+.myp-section-label::after{
+  content:'';flex:1;height:1px;
+  background:rgba(200,184,154,.12);
+}
+
+/* おすすめカード（縦積み） */
+.myp-cards{
+  display:flex;flex-direction:column;
+  gap:3px;padding:0 20px;margin-bottom:28px;
+}
+.myp-card{
+  display:flex;align-items:stretch;
+  background:var(--d2);border:1px solid rgba(255,255,255,.07);
+  border-radius:3px;overflow:hidden;cursor:pointer;
+  transition:border-color .2s,transform .15s;
+  text-align:left;width:100%;
+}
+.myp-card:hover{
+  border-color:rgba(200,184,154,.3);
+  transform:translateX(3px);
+}
+.myp-card-accent{
+  width:3px;flex-shrink:0;
+  background:linear-gradient(to bottom,var(--gold),rgba(200,184,154,.3));
+}
+.myp-card-icon{
+  width:52px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;background:rgba(200,184,154,.04);
+}
+.myp-card-icon svg{
+  width:22px;height:22px;stroke:var(--gold);
+  fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;
+}
+.myp-card-body{flex:1;padding:14px 14px 14px 0;}
+.myp-card-en{
+  font-family:'Cinzel',serif;font-size:7.5px;
+  letter-spacing:.45em;color:var(--gold);
+  text-transform:uppercase;margin-bottom:3px;
+}
+.myp-card-jp{
+  font-family:'Noto Serif JP',serif;font-size:13.5px;
+  color:var(--white);letter-spacing:.08em;margin-bottom:3px;
+}
+.myp-card-desc{
+  font-size:10px;color:var(--gray);
+  letter-spacing:.05em;line-height:1.5;
+}
+.myp-card-arr{
+  display:flex;align-items:center;
+  padding:0 14px 0 8px;
+  color:rgba(200,184,154,.4);font-size:20px;flex-shrink:0;
+}
+
+/* 資料カード（横並び小カード） */
+.myp-docs-grid{
+  display:flex;flex-direction:column;
+  gap:3px;padding:0 20px;margin-bottom:28px;
+}
+.myp-doc-card{
+  display:flex;align-items:center;gap:12px;
+  background:var(--d2);border:1px solid rgba(255,255,255,.07);
+  border-radius:3px;padding:12px 14px;cursor:pointer;
+  transition:border-color .2s,transform .15s;
+}
+.myp-doc-card:hover{
+  border-color:rgba(200,184,154,.3);transform:translateX(3px);
+}
+.myp-doc-icon{
+  width:36px;height:42px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;border-radius:2px;
+}
+.myp-doc-icon.pdf{background:rgba(220,60,60,.09);border:1px solid rgba(220,60,60,.2);}
+.myp-doc-icon.img{background:rgba(200,184,154,.09);border:1px solid rgba(200,184,154,.2);}
+.myp-doc-icon.zip{background:rgba(107,159,228,.09);border:1px solid rgba(107,159,228,.18);}
+.myp-doc-body{flex:1;min-width:0;}
+.myp-doc-name{
+  font-size:12.5px;color:var(--white);
+  letter-spacing:.06em;margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.myp-doc-meta{font-size:9.5px;color:var(--gray);letter-spacing:.05em;}
+.myp-doc-dl{
+  flex-shrink:0;background:none;
+  border:1px solid rgba(200,184,154,.25);
+  color:var(--gold);font-size:9.5px;
+  padding:6px 10px;cursor:pointer;
+  border-radius:2px;transition:all .2s;
+  font-family:'Noto Sans JP',sans-serif;
+}
+.myp-doc-card:hover .myp-doc-dl{background:var(--gold);color:var(--black);}
+
+/* フッター */
+.myp-footer{
+  padding:24px 20px 12px;text-align:center;
+  border-top:1px solid rgba(255,255,255,.06);
+  margin:0 20px;
+}
+.myp-footer-logo{
+  font-family:'Cinzel',serif;font-size:11px;
+  letter-spacing:.3em;color:var(--gold);margin-bottom:6px;
+}
+.myp-footer-txt{
+  font-size:9.5px;color:var(--gray);
+  letter-spacing:.12em;line-height:2;
+}
+
 /* ══ HERO ══ */
 .hero{position:relative;height:calc(100svh - var(--nav-h));overflow:hidden;display:flex;align-items:flex-end;}
 .hero-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1400&q=85') center/cover no-repeat;}
@@ -729,6 +949,56 @@ html,body{background:var(--black);color:var(--white);font-family:'Noto Sans JP',
 
 <!-- TOP -->
 <section class="sec on" id="s-top">
+
+  <!-- ══ MYPAGE（顧客専用：URLに?nがある時のみ表示） ══ -->
+  <div class="mypage-wrap" id="mypageWrap">
+    <!-- ヒーロー -->
+    <div class="myp-hero">
+      <div class="myp-hero-bg"></div>
+      <div class="myp-hero-body">
+        <div class="myp-property">The Grand Residence — Minami-Aoyama</div>
+        <div class="myp-welcome">ようこそ、</div>
+        <div class="myp-name"><em id="mypName">——</em></div>
+        <div class="myp-name-suffix">様 専用ページ</div>
+        <div class="myp-tagline" id="mypTagline">担当：——</div>
+        <div class="myp-scroll" onclick="document.getElementById('mypContent').scrollIntoView({behavior:'smooth'})">
+          <div class="myp-scroll-line"></div>
+          <div class="myp-scroll-txt">Your Private Gallery</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- コンテンツ -->
+    <div id="mypContent" style="padding-top:28px;">
+
+      <!-- 担当者カード -->
+      <div class="myp-staff">
+        <div class="myp-staff-avatar">👤</div>
+        <div>
+          <div class="myp-staff-label">Your Consultant</div>
+          <div class="myp-staff-name" id="mypStaffName">——</div>
+          <div class="myp-staff-msg" id="mypStaffMsg">ご来場ありがとうございました。<br>ご検討のお役に立てれば幸いです。</div>
+        </div>
+      </div>
+
+      <!-- ギャラリー・物件情報 -->
+      <div class="myp-section-label">物件コンテンツ</div>
+      <div class="myp-cards" id="mypCards"></div>
+
+      <!-- 提供資料 -->
+      <div class="myp-section-label" id="mypDocsLabel" style="display:none;">ご提供資料</div>
+      <div class="myp-docs-grid" id="mypDocsGrid"></div>
+
+      <!-- フッター -->
+      <div class="myp-footer">
+        <div class="myp-footer-logo">The Grand Residence</div>
+        <div class="myp-footer-txt" id="mypFooterTxt">販売代理：株式会社○○不動産<br>営業時間 10:00〜18:00（水曜定休）</div>
+      </div>
+
+    </div>
+  </div><!-- /mypage-wrap -->
+
+  <!-- ══ 通常TOP（共通URL） ══ -->
   <div class="hero">
     <div class="hero-bg"></div>
     <div class="hero-body">
@@ -1701,6 +1971,11 @@ function go(name){
 //  コンテンツ出し分け適用
 // ═══════════════════════════════════════════
 function applyPersonalization(){
+  // ══ マイページモード（?n= がある場合）══
+  if(CLIENT.name){
+    initMyPage();
+  }
+
   // 顧客バナー
   if(CLIENT.name){
     document.getElementById('clientBanner').style.display='block';
@@ -2111,6 +2386,93 @@ function openLoanFromUnit(){
     document.getElementById('loanAmount').value=Math.max(0,priceNum-down);
     calcLoan();
   }
+}
+
+
+// ═══════════════════════════════════════════
+//  MYPAGE
+// ═══════════════════════════════════════════
+function initMyPage(){
+  // マイページ表示、通常トップを非表示
+  document.getElementById('mypageWrap').style.display='block';
+  document.getElementById('clientBanner').style.display='none';
+  // ヒーロー部分
+  document.getElementById('mypName').textContent=CLIENT.name;
+  var staffTxt=CLIENT.staff||'担当者';
+  document.getElementById('mypStaffName').textContent=staffTxt;
+  document.getElementById('mypTagline').textContent='担当：'+staffTxt+'　よりお届けします';
+  // 通常コンテンツメニューを非表示（マイページカードに置換）
+  var topMenu=document.querySelector('.top-menu');
+  if(topMenu)topMenu.style.display='none';
+  var announce=document.querySelector('.announce');
+  if(announce)announce.style.display='none';
+  var hero=document.querySelector('#s-top .hero');
+  if(hero)hero.style.display='none';
+
+  // ── コンテンツカード生成
+  var MENU_ITEMS=[
+    {id:'gallery',   en:'Gallery',    jp:'建物パース・外観ギャラリー', desc:'外観・エントランス・モデルルームをご覧いただけます',
+     svg:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'},
+    {id:'video',     en:'Movie',      jp:'紹介動画・空撮ムービー',     desc:'プロモーション映像・ドローン空撮をご覧いただけます',
+     svg:'<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>'},
+    {id:'floorplan', en:'Floor Plan', jp:'間取り図・販売状況',         desc:'お部屋のプランや空き状況をご確認いただけます',
+     svg:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 21V9"/></svg>'},
+    {id:'price',     en:'Price',      jp:'価格表',                     desc:'最新の販売価格をご確認いただけます',
+     svg:'<svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>'},
+    {id:'map',       en:'Location',   jp:'周辺環境マップ',             desc:'交通・商業施設・教育環境をご確認いただけます',
+     svg:'<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>'},
+    {id:'overview',  en:'Overview',   jp:'物件概要・設備仕様',         desc:'建物・設備の詳細スペックをご確認いただけます',
+     svg:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>'},
+    {id:'contact',   en:'Contact',    jp:'担当者へのご連絡',           desc:'ご質問・ご相談はこちらからお気軽にどうぞ',
+     svg:'<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>'},
+  ];
+
+  var cards=document.getElementById('mypCards');
+  cards.innerHTML=MENU_ITEMS
+    .filter(function(item){
+      // hideパラメータで非表示指定されているものは除外
+      return CLIENT.hide.indexOf(item.id)<0;
+    })
+    .map(function(item){
+      return '<button class="myp-card" onclick="go(''+item.id+'')">'
+        +'<div class="myp-card-accent"></div>'
+        +'<div class="myp-card-icon">'+item.svg+'</div>'
+        +'<div class="myp-card-body">'
+          +'<div class="myp-card-en">'+item.en+'</div>'
+          +'<div class="myp-card-jp">'+item.jp+'</div>'
+          +'<div class="myp-card-desc">'+item.desc+'</div>'
+        +'</div>'
+        +'<div class="myp-card-arr">›</div>'
+      +'</button>';
+    }).join('');
+
+  // ── 資料カード生成（docsパラメータで絞り込み済み）
+  var targetDocs=CLIENT.docs.length>0
+    ? ALL_DOCS.filter(function(d){return CLIENT.docs.indexOf(d.id)>=0;})
+    : [];  // マイページでは明示的に指定した資料のみ表示
+
+  if(targetDocs.length>0){
+    document.getElementById('mypDocsLabel').style.display='flex';
+    document.getElementById('mypDocsGrid').innerHTML=targetDocs.map(function(d){
+      var tagHtml=d.tag==='new'?'<span style="font-family:Cinzel,serif;font-size:7px;padding:1px 5px;background:rgba(200,184,154,.12);border:1px solid var(--gold);color:var(--gold);margin-left:5px;letter-spacing:.15em;">NEW</span>':
+                  d.tag==='limited'?'<span style="font-family:Cinzel,serif;font-size:7px;padding:1px 5px;background:rgba(224,85,85,.1);border:1px solid var(--red);color:var(--red);margin-left:5px;letter-spacing:.15em;">限定</span>':'';
+      return '<div class="myp-doc-card" onclick="dlDoc(''+d.id+'')"> '
+        +'<div class="myp-doc-icon '+d.cls+'">'+d.icon+'</div>'
+        +'<div class="myp-doc-body">'
+          +'<div class="myp-doc-name">'+d.name+tagHtml+'</div>'
+          +'<div class="myp-doc-meta">'+d.meta+'</div>'
+        +'</div>'
+        +'<button class="myp-doc-dl">DL</button>'
+      +'</div>';
+    }).join('');
+  }
+
+  // フッター担当者情報
+  var footerLines=['販売代理：株式会社○○不動産'];
+  if(CLIENT.staff)footerLines.push('担当：'+CLIENT.staff);
+  if(CLIENT.tel) footerLines.push(CLIENT.tel);
+  footerLines.push('営業時間 10:00〜18:00（水曜定休）');
+  document.getElementById('mypFooterTxt').innerHTML=footerLines.join('<br>');
 }
 
 
