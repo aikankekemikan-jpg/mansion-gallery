@@ -2294,15 +2294,7 @@ function renderStatusTable(){
       var statusMatch=statusFilter==='all'||u.status===statusFilter;
       var typeMatch=statusTypeFilter==='all'||u.type===statusTypeFilter;
       var isHidden=!(statusMatch&&typeMatch);
-      bodyHtml+='<td class="status-cell">'
-        +'<div class="status-unit '+u.status+(isHidden?' status-unit-hidden':'')+'" onclick="openUnitModal(''+u.no+'')">'
-          +'<div class="status-unit-no">'+u.no+'</div>'
-          +'<div class="status-unit-type">'+u.type+'</div>'
-          +'<div class="status-unit-area">'+u.area+'㎡</div>'
-          +'<div class="status-unit-price">'+u.price+'万</div>'
-          +'<div class="status-unit-badge '+u.status+'">'+statusLabel[u.status]+'</div>'
-        +'</div>'
-      +'</td>';
+      bodyHtml+='<td class="status-cell">'        +'<div class="status-unit '+u.status+(isHidden?' status-unit-hidden':'')+'" data-no="'+u.no+'" onclick="openUnitModal(this.dataset.no)">'          +'<div class="status-unit-no">'+u.no+'</div>'          +'<div class="status-unit-type">'+u.type+'</div>'          +'<div class="status-unit-area">'+u.area+'㎡</div>'          +'<div class="status-unit-price">'+u.price+'万</div>'          +'<div class="status-unit-badge '+u.status+'">'+statusLabel[u.status]+'</div>'        +'</div>'      +'</td>';
     });
     bodyHtml+='</tr>';
   });
@@ -2434,7 +2426,7 @@ function initMyPage(){
       return CLIENT.hide.indexOf(item.id)<0;
     })
     .map(function(item){
-      return '<button class="myp-card" onclick="go(''+item.id+'')">'
+      return '<button class="myp-card" data-id="'+item.id+'" onclick="go(this.dataset.id)">'
         +'<div class="myp-card-accent"></div>'
         +'<div class="myp-card-icon">'+item.svg+'</div>'
         +'<div class="myp-card-body">'
@@ -2456,7 +2448,7 @@ function initMyPage(){
     document.getElementById('mypDocsGrid').innerHTML=targetDocs.map(function(d){
       var tagHtml=d.tag==='new'?'<span style="font-family:Cinzel,serif;font-size:7px;padding:1px 5px;background:rgba(200,184,154,.12);border:1px solid var(--gold);color:var(--gold);margin-left:5px;letter-spacing:.15em;">NEW</span>':
                   d.tag==='limited'?'<span style="font-family:Cinzel,serif;font-size:7px;padding:1px 5px;background:rgba(224,85,85,.1);border:1px solid var(--red);color:var(--red);margin-left:5px;letter-spacing:.15em;">限定</span>':'';
-      return '<div class="myp-doc-card" onclick="dlDoc(''+d.id+'')"> '
+      return '<div class="myp-doc-card" data-id="'+d.id+'" onclick="dlDoc(this.dataset.id)"> '
         +'<div class="myp-doc-icon '+d.cls+'">'+d.icon+'</div>'
         +'<div class="myp-doc-body">'
           +'<div class="myp-doc-name">'+d.name+tagHtml+'</div>'
@@ -2648,7 +2640,7 @@ function renderAdmPlans(){
           +'</div>'
           +'<div class="adm-plan-field">'
             +'<label class="adm-plan-label">対象階</label>'
-            +'<input class="adm-plan-input" type="text" id="adm-floor-'+i+'" value="'+p.floor+'" style="font-family:'Noto Sans JP',sans-serif;font-size:12px;text-align:left;">'
+            +'<input class="adm-plan-input" type="text" id="adm-floor-'+i+'" value="'+p.floor+'" style="font-family:sans-serif;font-size:12px;text-align:left;">'
             +'<div class="adm-plan-input-unit">例: 5〜12階</div>'
           +'</div>'
         +'</div>'
