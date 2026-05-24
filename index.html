@@ -859,6 +859,86 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 .loan-note{font-size:9px;color:var(--gray);line-height:1.75;letter-spacing:.04em;padding:12px 16px;border-top:1px solid rgba(255,255,255,.05);}
 
 
+
+/* ══ MEDIA MANAGER ══ */
+.media-loading{
+  display:flex;align-items:center;justify-content:center;
+  height:120px;font-size:12px;color:var(--gray);letter-spacing:.1em;
+}
+.media-grid{display:flex;flex-direction:column;gap:6px;}
+.media-item{
+  background:var(--d1);border:1px solid rgba(255,255,255,.07);
+  border-radius:3px;overflow:hidden;
+  transition:border-color .2s;
+}
+.media-item.status-hidden{opacity:.55;}
+.media-item-top{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+}
+.media-thumb{
+  width:56px;height:42px;flex-shrink:0;border-radius:2px;
+  overflow:hidden;background:var(--d3);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.media-thumb img{width:100%;height:100%;object-fit:cover;}
+.media-info{flex:1;min-width:0;}
+.media-filename{
+  font-size:11.5px;color:var(--white);font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:3px;
+}
+.media-type-badge{
+  display:inline-block;font-size:8px;padding:1px 6px;
+  border-radius:10px;letter-spacing:.1em;margin-right:4px;
+}
+.media-type-badge.photo{background:rgba(76,175,130,.15);color:var(--green);border:1px solid rgba(76,175,130,.3);}
+.media-type-badge.drive_video{background:rgba(91,155,213,.15);color:var(--blue);border:1px solid rgba(91,155,213,.3);}
+.media-type-badge.pdf{background:rgba(224,85,85,.15);color:var(--red);border:1px solid rgba(224,85,85,.3);}
+/* アクションボタン群 */
+.media-actions{
+  display:flex;gap:2px;padding:0 12px 10px;flex-wrap:wrap;
+}
+.media-act-btn{
+  flex:1;min-width:0;
+  background:none;border:1px solid rgba(255,255,255,.1);
+  color:var(--gray);font-size:9px;padding:6px 4px;
+  cursor:pointer;border-radius:2px;letter-spacing:.06em;
+  font-family:var(--f-body);transition:all .15s;white-space:nowrap;
+}
+.media-act-btn:hover{border-color:rgba(200,184,154,.4);color:var(--gray-l);}
+.media-act-btn.active-gallery  {background:rgba(76,175,130,.15);border-color:var(--green);color:var(--green);}
+.media-act-btn.active-interior {background:rgba(76,175,130,.15);border-color:var(--green);color:var(--green);}
+.media-act-btn.active-amenity  {background:rgba(76,175,130,.15);border-color:var(--green);color:var(--green);}
+.media-act-btn.active-view     {background:rgba(76,175,130,.15);border-color:var(--green);color:var(--green);}
+.media-act-btn.active-video    {background:rgba(91,155,213,.15);border-color:var(--blue);color:var(--blue);}
+.media-act-btn.active-floorplan{background:rgba(200,184,154,.15);border-color:var(--gold);color:var(--gold);}
+.media-act-btn.active-hidden   {background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.2);color:var(--gray);}
+/* タイトル編集欄 */
+.media-title-row{
+  display:flex;align-items:center;gap:6px;
+  padding:0 12px 10px;
+}
+.media-title-input{
+  flex:1;background:var(--d2);border:1px solid rgba(255,255,255,.08);
+  color:var(--white);font-family:var(--f-body);font-size:11px;
+  padding:6px 9px;border-radius:2px;outline:none;
+  transition:border-color .2s;
+}
+.media-title-input:focus{border-color:var(--gold);}
+.media-title-label{font-size:9px;color:var(--gray);white-space:nowrap;letter-spacing:.08em;}
+/* 保存・更新 */
+.media-save-bar{
+  display:flex;gap:6px;padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.06);margin-top:4px;
+}
+.media-refresh-btn{
+  background:none;border:1px solid rgba(200,184,154,.25);
+  color:var(--gold);font-size:10px;padding:10px 14px;
+  cursor:pointer;border-radius:2px;letter-spacing:.1em;
+  font-family:var(--f-body);transition:all .2s;white-space:nowrap;
+}
+.media-refresh-btn:hover{background:rgba(200,184,154,.08);}
+
 /* ══ CSV IMPORT ══ */
 .csv-import-wrap{padding:0 20px 16px;}
 .csv-import-box{
@@ -1835,6 +1915,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
     <div class="admin-drawer-title">管理ツール — URL生成</div>
     <div class="admin-tabs">
       <button class="admin-tab on" onclick="switchAdmTab(this,'plans')">物件データ</button>
+      <button class="admin-tab" onclick="switchAdmTab(this,'media')">メディア管理</button>
       <button class="admin-tab" onclick="switchAdmTab(this,'csv')">CSV取込</button>
       <button class="admin-tab" onclick="switchAdmTab(this,'url')">URL生成</button>
       <button class="admin-tab" onclick="switchAdmTab(this,'docs')">資料マスター</button>
@@ -1853,6 +1934,25 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
       <div class="adm-save-status" id="admSaveStatus"></div>
     </div>
 
+
+
+    <!-- メディア管理タブ -->
+    <div class="admin-tab-pane" id="adm-media">
+      <div style="font-size:10px;color:var(--gray);line-height:1.8;margin-bottom:12px;padding:9px 12px;background:var(--d2);border-radius:2px;border-left:2px solid rgba(200,184,154,.3);">
+        Drive の <strong style="color:var(--gray-l);">mansion_docs</strong> フォルダに画像・動画を置くと自動で一覧に追加されます。<br>
+        各ファイルにカテゴリを設定して「保存する」を押してください。
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button class="media-refresh-btn" onclick="loadMediaFromGAS()">🔄 Driveから最新を取得</button>
+        <div class="adm-save-status" id="mediaSaveStatus" style="flex:1;"></div>
+      </div>
+      <div id="mediaGrid" class="media-grid">
+        <div class="media-loading">「Driveから最新を取得」を押してください</div>
+      </div>
+      <div class="media-save-bar">
+        <button class="adm-btn" onclick="saveMediaSettings()">💾 設定を保存する</button>
+      </div>
+    </div>
 
     <!-- CSV取込タブ -->
     <div class="admin-tab-pane" id="adm-csv">
@@ -3111,6 +3211,145 @@ function initMyPage(){
   if(CLIENT.tel) footerLines.push(CLIENT.tel);
   footerLines.push('営業時間 10:00〜18:00（水曜定休）');
   document.getElementById('mypFooterTxt').innerHTML=footerLines.join('<br>');
+}
+
+
+// ═══════════════════════════════════════════
+//  メディア管理（管理画面）
+// ═══════════════════════════════════════════
+var mediaItems = []; // 現在表示中のメディアリスト
+
+// カテゴリ表示名マップ
+var CAT_LABELS = {
+  'exterior':  '外観写真',
+  'interior':  'モデルルーム',
+  'amenity':   '共用施設',
+  'view':      '眺望',
+  'video':     '動画',
+  'floorplan': '間取り図',
+  '':          '未設定',
+};
+
+// Drive から最新メディアリストを取得
+function loadMediaFromGAS() {
+  var grid = document.getElementById('mediaGrid');
+  grid.innerHTML = '<div class="media-loading">読み込み中...</div>';
+
+  fetchGAS('メディア', function(err, data) {
+    if (err || !data || !Array.isArray(data)) {
+      grid.innerHTML = '<div class="media-loading" style="color:var(--red);">取得に失敗しました。GASのデプロイを確認してください。</div>';
+      return;
+    }
+    mediaItems = data;
+    renderMediaGrid();
+  });
+}
+
+// メディアグリッドを描画
+function renderMediaGrid() {
+  var grid = document.getElementById('mediaGrid');
+  if (!mediaItems.length) {
+    grid.innerHTML = '<div class="media-loading">Driveにファイルがありません</div>';
+    return;
+  }
+
+  grid.innerHTML = mediaItems.map(function(item, idx) {
+    var id    = String(item['ファイルID']   || '');
+    var name  = String(item['タイトル']     || item['ファイルID'] || '');
+    var type  = String(item['種別']         || 'photo');
+    var cat   = String(item['カテゴリ']     || '');
+    var title = String(item['タイトル']     || '');
+    var disp  = String(item['表示']         || '非表示');
+
+    // サムネイル
+    var thumbHtml = type === 'photo'
+      ? '<img src="' + driveThumbnailUrl(id) + '" alt="" loading="lazy" >' 
+      : (type === 'drive_video' ? '🎬' : type === 'pdf' ? '📄' : '📷');
+
+    // 現在のカテゴリに応じたボタン状態
+    var cats = [
+      {key:'exterior',  label:'外観写真'},
+      {key:'interior',  label:'モデルルーム'},
+      {key:'amenity',   label:'共用施設'},
+      {key:'view',      label:'眺望'},
+      {key:'video',     label:'動画'},
+      {key:'floorplan', label:'間取り図'},
+    ];
+    // 非表示ボタン
+    var hiddenActive = (disp === '非表示') ? ' active-hidden' : '';
+    var catBtns = cats.map(function(c) {
+      var isActive = (cat === c.key && disp === '表示') ? ' active-' + c.key : '';
+      return '<button class="media-act-btn' + isActive + '" data-idx="' + idx + '" data-cat="' + c.key + '" onclick="setMediaCat(parseInt(this.dataset.idx),this.dataset.cat)">' + c.label + '</button>';
+    }).join('');
+
+    return '<div class="media-item' + (disp === '非表示' ? ' status-hidden' : '') + '" id="media-item-' + idx + '">'
+      + '<div class="media-item-top">'
+        + '<div class="media-thumb">' + thumbHtml + '</div>'
+        + '<div class="media-info">'
+          + '<div class="media-filename">' + name + '</div>'
+          + '<span class="media-type-badge ' + type + '">' + type + '</span>'
+          + '<span style="font-size:9px;color:var(--gray);">' + (cat ? CAT_LABELS[cat] || cat : '未設定') + '</span>'
+        + '</div>'
+      + '</div>'
+      + '<div class="media-title-row">'
+        + '<span class="media-title-label">タイトル</span>'
+        + '<input class="media-title-input" type="text" id="media-title-' + idx + '" value="' + title + '" placeholder="表示タイトルを入力">'
+      + '</div>'
+      + '<div class="media-actions">'
+        + catBtns
+        + '<button class="media-act-btn' + hiddenActive + '" data-idx="' + idx + '" onclick="setMediaHidden(parseInt(this.dataset.idx))">非表示</button>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+// カテゴリを設定
+function setMediaCat(idx, cat) {
+  mediaItems[idx]['カテゴリ'] = cat;
+  mediaItems[idx]['表示'] = '表示';
+  renderMediaGrid();
+}
+
+// 非表示に設定
+function setMediaHidden(idx) {
+  mediaItems[idx]['表示'] = '非表示';
+  mediaItems[idx]['カテゴリ'] = '';
+  renderMediaGrid();
+}
+
+// GASに設定を保存（POSTリクエスト）
+function saveMediaSettings() {
+  // タイトル入力値を反映
+  mediaItems.forEach(function(item, idx) {
+    var titleEl = document.getElementById('media-title-' + idx);
+    if (titleEl) item['タイトル'] = titleEl.value.trim();
+  });
+
+  var st = document.getElementById('mediaSaveStatus');
+  st.textContent = '保存中...';
+  st.style.opacity = '1';
+
+  fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'updateMedia', items: mediaItems }),
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      st.textContent = '✓ ' + data.count + '件を保存しました';
+      // ギャラリー・動画を即再読み込み
+      fetchGAS('メディア', function(err, rows) {
+        if (!err && rows) applyMediaData(rows);
+      });
+    } else {
+      st.textContent = '✗ 保存失敗: ' + (data.error || '不明なエラー');
+    }
+    setTimeout(function() { st.style.opacity = '0'; }, 3000);
+  })
+  .catch(function(err) {
+    st.textContent = '✗ 通信エラー';
+    setTimeout(function() { st.style.opacity = '0'; }, 3000);
+  });
 }
 
 
