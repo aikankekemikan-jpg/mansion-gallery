@@ -626,6 +626,21 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
   font-family:var(--f-body);letter-spacing:.1em;transition:all .2s;
 }
 
+
+/* Drive画像間取り */
+.fp-img-wrap{
+  background:#F8F6F0;
+  aspect-ratio:4/3;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.fp-img-wrap img{
+  width:100%;height:100%;
+  object-fit:contain;
+  transition:transform .5s ease;
+}
+.fp-card:hover .fp-img-wrap img{transform:scale(1.03);}
+
 /* 比較モードバー */
 .fp-compare-bar{
   display:flex;align-items:center;justify-content:space-between;
@@ -2096,6 +2111,141 @@ function fetchGAS(sheetName, callback) {
     .catch(function(err) { callback(err, null); });
 }
 
+// ─── Google Drive ヘルパー関数 ───────────────────────────
+function driveImageUrl(fileId) {
+  // 直接表示URL（認証不要・共有設定済みが前提）
+  return 'https://drive.google.com/uc?export=view&id=' + fileId;
+}
+
+function driveThumbnailUrl(fileId) {
+  // サムネイル用（小さいサイズ・高速）
+  return 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400';
+}
+
+function driveVideoUrl(fileId) {
+  // Drive動画プレビューURL
+  return 'https://drive.google.com/file/d/' + fileId + '/preview';
+}
+
+function youtubeThumbUrl(videoId) {
+  return 'https://img.youtube.com/vi/' + videoId + '/mqdefault.jpg';
+}
+
+// ─── メディアデータをGASから取得して反映 ───────────────
+function applyMediaData(rows) {
+  if (!rows || !rows.length) return;
+
+  // 表示対象のみ絞り込み
+  var visible = rows.filter(function(r) {
+    return String(r['表示'] || '').trim() !== '非表示';
+  });
+
+  // カテゴリ別に分類
+  var photoMap = { exterior:[], interior:[], amenity:[], view:[] };
+  var videoList = [];
+
+  visible.forEach(function(r) {
+    var cat  = String(r['カテゴリ'] || '').trim();
+    var type = String(r['種別']     || '').trim();
+    var id   = String(r['ファイルID'] || '').trim();
+    var ttl  = String(r['タイトル'] || '').trim();
+    var sub  = String(r['サブテキスト'] || '').trim();
+
+    if (!id) return;
+
+    if (type === 'photo' && photoMap[cat]) {
+      photoMap[cat].push({
+        url: driveImageUrl(id),
+        ttl: ttl,
+        sub: sub || '※提供画像'
+      });
+    } else if (type === 'youtube') {
+      videoList.push({
+        thumb: youtubeThumbUrl(id),
+        ttl:   ttl,
+        meta:  sub,
+        yt:    id,
+        type:  'youtube'
+      });
+    } else if (type === 'drive_video') {
+      videoList.push({
+        thumb: driveThumbnailUrl(id),
+        ttl:   ttl,
+        meta:  sub,
+        driveId: id,
+        type:  'drive'
+      });
+    }
+  });
+
+  // ギャラリーデータを更新（データがある カテゴリのみ上書き）
+  Object.keys(photoMap).forEach(function(cat) {
+    if (photoMap[cat].length > 0) {
+      GAL[cat] = photoMap[cat];
+    }
+  });
+
+  // 動画リストを更新
+  if (videoList.length > 0) {
+    VIDEOS.length = 0;
+    videoList.forEach(function(v) { VIDEOS.push(v); });
+  }
+
+  // 再描画
+  renderGal();
+  renderVids();
+}
+
+// ─── 間取り図データをGASから取得して反映 ───────────────
+function applyFloorplanData(rows) {
+  if (!rows || !rows.length) return;
+
+  var visible = rows.filter(function(r) {
+    return String(r['表示'] || '').trim() !== '非表示';
+  });
+
+  if (!visible.length) return;
+
+  // FP_DEFAULT を Drive画像ベースで上書き
+  var newFP = visible.map(function(r) {
+    var type    = String(r['タイプ']        || '').trim();
+    var area    = String(r['面積（㎡）']    || '').trim();
+    var floor   = String(r['階数']          || '').trim();
+    var price   = parseInt(r['価格帯（万円〜）']) || 0;
+    var mgmt    = parseInt(r['管理費'])      || 0;
+    var repair  = parseInt(r['修繕積立金'])  || 0;
+    var parking = parseInt(r['駐車場'])      || 0;
+    var other   = parseInt(r['その他'])      || 0;
+    var imgId   = String(r['画像ファイルID'] || '').trim();
+    var tag     = String(r['タグ']           || '').trim();
+
+    return {
+      type:     type,
+      tag:      tag || null,
+      area:     area,
+      floor:    floor,
+      priceNum: price,
+      price:    price.toLocaleString() + '万円〜',
+      fees:     { mgmt:mgmt, repair:repair, parking:parking, other:other },
+      imgUrl:   imgId ? driveImageUrl(imgId) : null,
+      // SVGはフォールバック用として保持（imgUrlがない場合に使用）
+      svg:      null,
+      specs: [
+        { l:'専有面積', v:area,                u:'㎡'    },
+        { l:'価格帯',   v:price.toLocaleString(), u:'万円〜' },
+        { l:'バルコニー', v:'—',               u:'㎡'    },
+      ]
+    };
+  });
+
+  // FPを上書き（loadFPも更新）
+  FP.length = 0;
+  newFP.forEach(function(p) { FP.push(p); });
+
+  // 再描画
+  renderFP();
+}
+
 // ─── 全データを起動時に取得して反映
 function loadAllFromGAS() {
   // ── 物件情報
@@ -2123,6 +2273,18 @@ function loadAllFromGAS() {
   fetchGAS('資料リスト', function(err, data) {
     if (err || !data || !Array.isArray(data)) return;
     applyDocsData(data);
+  });
+
+  // ── メディア（写真・動画）
+  fetchGAS('メディア', function(err, data) {
+    if (err || !data || !Array.isArray(data)) return;
+    applyMediaData(data);
+  });
+
+  // ── 間取り図
+  fetchGAS('間取り図', function(err, data) {
+    if (err || !data || !Array.isArray(data)) return;
+    applyFloorplanData(data);
   });
 }
 
@@ -2578,6 +2740,11 @@ function renderVids(){
     return'<div class="vid-card"><div class="vid-thumb" onclick="openVid(\''+v.yt+'\')"><img src="'+v.thumb+'" alt="'+v.ttl+'" loading="lazy"><div class="vid-play"><div class="vid-play-btn"><div class="vid-play-ico"></div></div></div></div><div class="vid-info"><div class="vid-ttl">'+v.ttl+'</div><div class="vid-meta">'+v.meta+'</div></div></div>';
   }).join('');
 }
+function openDriveVid(fileId){
+  document.getElementById('vidFrame').src=driveVideoUrl(fileId);
+  document.getElementById('vidModal').classList.add('on');
+  document.body.style.overflow='hidden';
+}
 function openVid(id){document.getElementById('vidFrame').src='https://www.youtube.com/embed/'+id+'?autoplay=1';document.getElementById('vidModal').classList.add('on');document.body.style.overflow='hidden';}
 function closeVid(){document.getElementById('vidFrame').src='';document.getElementById('vidModal').classList.remove('on');document.body.style.overflow='';}
 
@@ -2598,10 +2765,14 @@ function toggleCompareMode(){
 function renderFP(){
   document.getElementById('fpGrid').innerHTML=FP.map(function(p,i){
     var isSel=compareSelected.indexOf(i)>=0;
-    var selNum=compareMode&&isSel?'<div style="position:absolute;top:7px;right:7px;background:var(--gold);color:var(--black);font-family:var(--f-label);font-size:8px;padding:2px 7px;">'+(compareSelected.indexOf(i)+1)+'</div>':'';
-    return'<div class="fp-card'+(i===0?' wide':'')+(compareMode&&isSel?' compare-selected':'')+'" onclick="tapFP('+i+')">'
-      +'<div class="fp-svg-wrap">'+p.svg+'</div>'
-      +'<div class="fp-info"><div class="fp-type">'+p.type+'</div><div class="fp-meta"><div class="fp-meta-item">'+p.area+'㎡</div><div class="fp-meta-item">'+p.floor+'</div></div><div class="fp-price">'+p.price+'<small>（予定）</small></div></div>'
+    var selNum=compareMode&&isSel?'<div style="position:absolute;top:7px;right:7px;background:var(--gold);color:var(--black);font-size:8px;padding:2px 7px;">'+(compareSelected.indexOf(i)+1)+'</div>':'';
+    var imgContent=p.imgUrl
+      ?'<div class="fp-img-wrap"><img src="'+p.imgUrl+'" alt="'+p.type+'" loading="lazy"></div>'
+      :'<div class="fp-svg-wrap">'+(p.svg||'<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray);font-size:12px;">画像準備中</div>')+'</div>';
+    return'<div class="fp-card'+(i===0?' wide':'')+(compareMode&&isSel?' compare-selected':'')+'" onclick="tapFP('+i+')">'+imgContent
+      +'<div class="fp-info"><div class="fp-type">'+p.type+'</div>'
+      +'<div class="fp-meta"><div class="fp-meta-item">'+p.area+'㎡</div><div class="fp-meta-item">'+p.floor+'</div></div>'
+      +'<div class="fp-price">'+p.price+'<small>（予定）</small></div></div>'
       +(p.tag?'<div class="fp-badge">'+p.tag+'</div>':'')
       +selNum+'</div>';
   }).join('');
@@ -2624,8 +2795,16 @@ function openFP(i){
   var p=FP[i];
   document.getElementById('fpModalTtl').textContent=p.type+' — '+p.area+'㎡';
   var sw=document.getElementById('fpModalSvg');
-  sw.innerHTML=p.svg+'<div class="fp-zoom-hint" id="fpZoomHint">タップで拡大</div>';
   sw.classList.remove('zoomed');
+  if(p.imgUrl){
+    // Drive画像モード
+    sw.innerHTML='<img src="'+p.imgUrl+'" alt="'+p.type+'" style="width:100%;height:100%;object-fit:contain;">'
+      +'<div class="fp-zoom-hint" id="fpZoomHint">タップで拡大</div>';
+  } else {
+    // SVGモード（フォールバック）
+    sw.innerHTML=(p.svg||'<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">画像準備中</div>')
+      +'<div class="fp-zoom-hint" id="fpZoomHint">タップで拡大</div>';
+  }
   document.getElementById('fpModalSpecs').innerHTML=p.specs.map(function(s){
     return'<div class="fp-spec"><div class="fp-spec-lbl">'+s.l+'</div><div class="fp-spec-val">'+s.v+'</div><div class="fp-spec-unit">'+s.u+'</div></div>';
   }).join('');
@@ -2646,7 +2825,12 @@ function openCmp(){
   function fillCol(col,p){
     document.getElementById('cmpType'+col).textContent=p.type+' '+p.area+'㎡';
     var sw=document.getElementById('cmpSvg'+col);
-    sw.innerHTML=p.svg;sw.classList.remove('zoomed');
+    sw.classList.remove('zoomed');
+    if(p.imgUrl){
+      sw.innerHTML='<img src="'+p.imgUrl+'" alt="'+p.type+'" style="width:100%;height:100%;object-fit:contain;">';
+    } else {
+      sw.innerHTML=p.svg||'<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-size:11px;">画像準備中</div>';
+    }
     document.getElementById('cmpSpecs'+col).innerHTML=
       '<div class="fp-cmp-spec-row"><span class="fp-cmp-spec-lbl">専有面積</span><span class="fp-cmp-spec-val">'+p.area+'㎡</span></div>'
       +'<div class="fp-cmp-spec-row"><span class="fp-cmp-spec-lbl">価格帯</span><span class="fp-cmp-spec-val">'+p.price+'</span></div>'
