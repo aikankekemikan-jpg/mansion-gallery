@@ -10,16 +10,17 @@
 <style>
 :root{
   --gold:#C8B89A;--gold-l:#E2D4BE;--gold-d:#9A8060;--gold-dim:rgba(200,184,154,.1);
-  --black:#1C1C1E;
-  --d1:#232325;
-  --d2:#2C2C2E;
-  --d3:#363638;
-  --d4:#48484A;
-  /* テキスト強化 */
-  --gray:#AEAEB2;       /* サブテキスト（明るく） */
-  --gray-l:#E5E5EA;     /* 本文テキスト（より明るく・読みやすく） */
-  --white:#F5F5F7;
-  --red:#E05555;--blue:#6B9FE4;--green:#6BAE8C;
+  /* ネイビーパレット */
+  --black:#1A2332;       /* メイン背景：ディープネイビー */
+  --d1:#1F2B3E;          /* セカンダリ背景 */
+  --d2:#243347;          /* カード背景 */
+  --d3:#2D3F57;          /* ホバー */
+  --d4:#374D68;          /* ボーダー */
+  /* テキスト */
+  --gray:#8899AA;        /* サブテキスト */
+  --gray-l:#C8D8E8;      /* 本文テキスト */
+  --white:#EEF4FA;       /* 見出し（ブルーがかったオフホワイト）*/
+  --red:#E05555;--blue:#5B9BD5;--green:#4CAF82;
   --nav-h:60px;--bot-h:66px;
   /* フォント: メイリオ優先・Noto Sans JPフォールバック */
   --f-body:  'Meiryo','メイリオ','Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans-serif;
@@ -31,7 +32,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 ::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:var(--d1)}::-webkit-scrollbar-thumb{background:var(--gold-d)}
 
 /* ══ HEADER ══ */
-.hdr{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav-h);background:rgba(28,28,30,.96);backdrop-filter:blur(20px);border-bottom:1px solid rgba(200,184,154,.15);display:flex;align-items:center;justify-content:center;padding:0;}
+.hdr{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav-h);background:rgba(26,35,50,.96);backdrop-filter:blur(20px);border-bottom:1px solid rgba(200,184,154,.18);display:flex;align-items:center;justify-content:center;padding:0;}
 .hdr-inner{max-width:768px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:100%;}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;background:none;border:none;}
 .logo-emblem{position:relative;width:34px;height:34px;flex-shrink:0;}
@@ -47,7 +48,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 .hdr-admin-btn.on{background:rgba(200,184,154,.12);border-color:var(--gold);color:var(--gold);}
 
 /* ══ BOTTOM NAV ══ */
-.bot-nav{position:fixed;bottom:0;left:0;right:0;z-index:300;height:var(--bot-h);background:rgba(28,28,30,.98);backdrop-filter:blur(20px);border-top:1px solid rgba(200,184,154,.1);display:flex;justify-content:center;}
+.bot-nav{position:fixed;bottom:0;left:0;right:0;z-index:300;height:var(--bot-h);background:rgba(237,234,228,.98);backdrop-filter:blur(20px);border-top:1px solid rgba(168,137,90,.15);display:flex;justify-content:center;}
 .bot-nav-inner{max-width:768px;width:100%;display:flex;}
 .bot-btn{flex:1;background:none;border:none;color:var(--gray);font-family:var(--f-body);font-size:7.5px;letter-spacing:.04em;padding:8px 2px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:color .2s;position:relative;}
 .bot-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s;}
@@ -66,14 +67,14 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 .pg-head{padding:26px 20px 18px;}
 .pg-head-en{font-family:var(--f-label);font-size:8.5px;letter-spacing:.6em;color:var(--gold);text-transform:uppercase;margin-bottom:5px;}
 .pg-head-jp{font-family:var(--f-body);font-size:22px;font-weight:700;letter-spacing:.02em;color:var(--white);}
-.gold-rule{height:1px;margin:0 20px 22px;background:linear-gradient(to right,var(--gold),rgba(200,184,154,.08));opacity:.55;}
+.gold-rule{height:1px;margin:0 20px 22px;background:linear-gradient(to right,var(--gold),rgba(200,184,154,.05));opacity:.5;}
 
 
 
 /* ══ ADMIN PASSWORD ══ */
 .admin-pw-modal{
   display:none;position:fixed;inset:0;z-index:600;
-  background:rgba(0,0,0,.85);backdrop-filter:blur(8px);
+  background:rgba(15,22,35,.82);backdrop-filter:blur(8px);
   align-items:center;justify-content:center;
 }
 .admin-pw-modal.on{display:flex;animation:fadeUp .3s ease;}
@@ -330,7 +331,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 /* ══ HERO ══ */
 .hero{position:relative;height:calc(100svh - var(--nav-h));overflow:hidden;display:flex;align-items:flex-end;}
 .hero-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1400&q=85') center/cover no-repeat;}
-.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(165deg,rgba(20,20,22,.05) 0%,rgba(20,20,22,.6) 55%,rgba(20,20,22,.92) 100%);}
+.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(165deg,rgba(26,35,50,.08) 0%,rgba(26,35,50,.6) 55%,rgba(26,35,50,.93) 100%);}
 .hero-body{position:relative;padding:0 22px 38px;width:100%;}
 .hero-kicker{font-family:var(--f-label);font-size:8px;letter-spacing:.6em;color:var(--gold);text-transform:uppercase;margin-bottom:13px;display:flex;align-items:center;gap:10px;}
 .hero-kicker::before{content:'';width:26px;height:1px;background:var(--gold);}
@@ -353,7 +354,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 .client-banner-staff{font-size:10.5px;color:var(--gray);letter-spacing:.1em;}
 
 /* TOP */
-.announce{background:linear-gradient(135deg,#8A7458 0%,var(--gold) 100%);padding:11px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.announce{background:linear-gradient(135deg,var(--gold-d) 0%,var(--gold) 100%);padding:11px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .announce-txt{font-size:11px;color:var(--black);font-weight:700;letter-spacing:.1em;line-height:1.5;}
 .announce-badge{background:var(--black);color:var(--gold);font-family:var(--f-label);font-size:8px;letter-spacing:.2em;padding:4px 10px;white-space:nowrap;flex-shrink:0;}
 .top-menu{padding:24px 20px 8px;}
@@ -401,7 +402,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 .vid-info{padding:13px 15px;}
 .vid-ttl{font-family:var(--f-body);font-weight:500;font-size:13px;color:var(--white);letter-spacing:.08em;margin-bottom:4px;}
 .vid-meta{font-size:10px;color:var(--gray);letter-spacing:.1em;}
-.vid-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(20,20,22,.97);flex-direction:column;align-items:center;justify-content:center;padding:18px;}
+.vid-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(15,22,35,.97);flex-direction:column;align-items:center;justify-content:center;padding:18px;}
 .vid-modal.on{display:flex;animation:fadeUp .3s ease;}
 .vid-modal-inner{position:relative;width:100%;max-width:640px;}
 .vid-modal-frame{aspect-ratio:16/9;width:100%;border:none;background:#000;}
@@ -413,7 +414,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 .fp-card:hover{border-color:rgba(200,184,154,.4);transform:translateY(-2px);}
 .fp-card.wide{grid-column:1/-1;}
 .fp-card.compare-selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
-.fp-svg-wrap{background:#F5F4EE;display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;overflow:hidden;}
+.fp-svg-wrap{background:#F8F6F0;display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;overflow:hidden;}
 .fp-svg-wrap svg{width:100%;height:auto;}
 .fp-info{padding:10px 12px;}
 .fp-type{font-family:var(--f-body);font-size:18px;font-weight:700;color:var(--gold);letter-spacing:.04em;}
@@ -505,7 +506,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
   min-width:80px;
 }
 .status-unit:hover{transform:translateY(-1px);border-color:rgba(200,184,154,.3);}
-.status-unit.sold{background:var(--d1);border-color:rgba(255,255,255,.03);cursor:default;}
+.status-unit.sold{background:var(--d1);border-color:rgba(255,255,255,.04);cursor:default;}
 .status-unit.sold:hover{transform:none;}
 .status-unit.reserved{border-color:rgba(107,159,228,.25);}
 .status-unit-no{
@@ -548,7 +549,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 .status-summary-label{font-size:8px;color:var(--gray);letter-spacing:.12em;margin-top:2px;}
 
 /* 住戸詳細モーダル */
-.unit-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.88);align-items:flex-end;justify-content:center;}
+.unit-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(15,22,35,.88);align-items:flex-end;justify-content:center;}
 .unit-modal.on{display:flex;animation:fadeUp .28s ease;}
 .unit-modal-inner{
   background:var(--d2);border:1px solid rgba(200,184,154,.22);
@@ -590,14 +591,14 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 }
 .fp-compare-toggle.on{background:var(--gold);color:var(--black);}
 /* 比較モーダル */
-.fp-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(20,20,22,.96);flex-direction:column;align-items:center;justify-content:center;padding:14px;overflow-y:auto;}
+.fp-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(15,22,35,.96);flex-direction:column;align-items:center;justify-content:center;padding:14px;overflow-y:auto;}
 .fp-modal.on{display:flex;animation:fadeUp .3s ease;}
 .fp-modal-inner{max-width:480px;width:100%;}
 .fp-modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;padding:0 2px;}
 .fp-modal-ttl{font-family:var(--f-num);font-size:21px;color:var(--gold);letter-spacing:.08em;}
 .fp-modal-close{background:none;border:1px solid rgba(200,184,154,.28);color:var(--gold);width:32px;height:32px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 /* ズーム対応SVGラッパー */
-.fp-modal-svg{background:#F5F4EE;border-radius:3px;aspect-ratio:4/3;overflow:hidden;margin-bottom:11px;display:flex;align-items:center;justify-content:center;position:relative;cursor:zoom-in;}
+.fp-modal-svg{background:#F8F6F0;border-radius:3px;aspect-ratio:4/3;overflow:hidden;margin-bottom:11px;display:flex;align-items:center;justify-content:center;position:relative;cursor:zoom-in;}
 .fp-modal-svg.zoomed{cursor:zoom-out;aspect-ratio:unset;height:60vw;max-height:420px;}
 .fp-modal-svg svg{width:100%;height:auto;transition:transform .3s ease;transform-origin:center center;}
 .fp-modal-svg.zoomed svg{width:200%;height:auto;}
@@ -608,7 +609,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 .fp-spec-val{font-family:var(--f-num);font-size:17px;color:var(--gold);letter-spacing:.04em;}
 .fp-spec-unit{font-size:9px;color:var(--gray-l);}
 /* 比較モーダル（2プラン並列） */
-.fp-cmp-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(20,20,22,.98);flex-direction:column;padding:0;overflow-y:auto;}
+.fp-cmp-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(15,22,35,.98);flex-direction:column;padding:0;overflow-y:auto;}
 .fp-cmp-modal.on{display:flex;animation:fadeUp .3s ease;}
 .fp-cmp-hdr{
   display:flex;align-items:center;justify-content:space-between;
@@ -630,7 +631,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
   display:flex;align-items:center;justify-content:center;
 }
 .fp-cmp-svg-wrap{
-  background:#F5F4EE;flex:1;min-height:180px;max-height:240px;
+  background:#F8F6F0;flex:1;min-height:180px;max-height:240px;
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;position:relative;cursor:zoom-in;
 }
@@ -666,7 +667,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 .price-tbl thead tr{border-bottom:1px solid rgba(200,184,154,.25);}
 .price-tbl th{font-family:var(--f-label);font-size:8px;letter-spacing:.32em;color:var(--gold);padding:9px 9px;white-space:nowrap;text-align:left;font-weight:400;}
 .price-tbl tbody tr{border-bottom:1px solid rgba(255,255,255,.07);transition:background .15s;}
-.price-tbl tbody tr:hover{background:var(--d2);}
+.price-tbl tbody tr:hover{background:rgba(200,184,154,.06);}
 .price-tbl td{padding:10px 9px;font-size:12px;color:var(--white);white-space:nowrap;font-weight:400;}
 .price-tbl td.num{font-family:var(--f-body);font-size:13px;color:var(--white);font-weight:500;}
 .price-tbl td.gold{color:var(--gold);}
@@ -708,7 +709,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 
 
 /* ══ LOAN SIMULATOR ══ */
-.loan-modal{display:none;position:fixed;inset:0;z-index:500;background:rgba(20,20,22,.98);overflow-y:auto;}
+.loan-modal{display:none;position:fixed;inset:0;z-index:500;background:rgba(26,35,50,.99);overflow-y:auto;}
 .loan-modal.on{display:block;animation:fadeUp .35s ease;}
 .loan-inner{max-width:480px;margin:0 auto;padding:calc(var(--nav-h) + 8px) 20px calc(var(--bot-h) + 16px);background:var(--black);}
 .loan-hdr{display:flex;align-items:flex-start;justify-content:space-between;padding:16px 0 14px;}
@@ -904,12 +905,12 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
   width:38px;height:38px;border-radius:50%;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
 }
-.link-icon.tel  {background:rgba(107,174,140,.12);border:1px solid rgba(107,174,140,.3);}
+.link-icon.tel  {background:rgba(76,175,130,.12);border:1px solid rgba(76,175,130,.3);}
 .link-icon.mail {background:rgba(200,184,154,.1); border:1px solid rgba(200,184,154,.25);}
-.link-icon.line {background:rgba(6,199,85,.1);    border:1px solid rgba(6,199,85,.3);}
-.link-icon.web  {background:rgba(107,159,228,.1); border:1px solid rgba(107,159,228,.25);}
-.link-icon.map  {background:rgba(224,85,85,.1);   border:1px solid rgba(224,85,85,.25);}
-.link-icon.doc  {background:rgba(180,140,220,.1); border:1px solid rgba(180,140,220,.25);}
+.link-icon.line {background:rgba(6,199,85,.1);    border:1px solid rgba(6,199,85,.28);}
+.link-icon.web  {background:rgba(91,155,213,.12); border:1px solid rgba(91,155,213,.3);}
+.link-icon.map  {background:rgba(224,85,85,.1);   border:1px solid rgba(224,85,85,.28);}
+.link-icon.doc  {background:rgba(180,140,220,.1); border:1px solid rgba(180,140,220,.28);}
 .link-icon svg  {width:18px;height:18px;}
 .link-body{flex:1;min-width:0;}
 .link-label{font-family:var(--f-body);font-weight:500;font-size:13px;color:var(--white);letter-spacing:.06em;margin-bottom:2px;}
@@ -925,7 +926,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 .admin-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);pointer-events:auto;}
 .admin-drawer{
   position:absolute;bottom:0;left:0;right:0;
-  background:var(--d2);border-top:1px solid rgba(200,184,154,.25);
+  background:var(--d2);border-top:1px solid rgba(200,184,154,.22);
   border-radius:12px 12px 0 0;
   padding:0 0 env(safe-area-inset-bottom);
   max-height:90vh;overflow-y:auto;
@@ -1330,11 +1331,10 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 
 <!-- MAP -->
 <section class="sec" id="s-map">
-  <div class="pg-head"><div class="pg-head-en">Location</div><div class="pg-head-jp">周辺環境</div></div>
+  <div class="pg-head"><div class="pg-head-en">Location</div><div class="pg-head-jp">アクセス・周辺環境</div></div>
   <div class="gold-rule"></div>
-  <!-- 物件住所はJSの PROPERTY_ADDRESS 変数で変更できます -->
-  <!-- Google Maps Embed（APIキー不要版・ピン表示） -->
-  <div class="gmap-wrap" id="gmapWrap">
+  <!-- 物件所在地マップ（JSの PROPERTY_ADDRESS で住所変更） -->
+  <div class="gmap-wrap">
     <iframe
       id="gmapFrame"
       class="gmap-frame"
@@ -1345,10 +1345,8 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
       src="">
     </iframe>
   </div>
-  <!-- APIキーを取得した場合: src を Maps Embed API の place モードURLに差し替えてください -->
   <div class="gmap-open-btn-wrap">
-    <a class="gmap-open-btn" id="gmapOpenBtn"
-      id="gmapLinkBtn" href="#" target="_blank" rel="noopener">
+    <a class="gmap-open-btn" id="gmapOpenBtn" href="#" target="_blank" rel="noopener">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2a6 6 0 016 6c0 4.5-6 10-6 10S4 12.5 4 8a6 6 0 016-6z"/><circle cx="10" cy="8" r="2"/></svg>
       Google マップで開く
     </a>
@@ -1412,22 +1410,80 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
   <div class="gold-rule"></div>
   <div class="links-wrap">
 
-    <!-- 担当者カード（URLパラメータで差し替え） -->
-    <div class="links-staff-card">
-      <div class="links-staff-avatar">👤</div>
-      <div>
-        <div class="links-staff-label">Your Consultant</div>
-        <div class="links-staff-name" id="contactStaffName">担当者未設定</div>
-        <div class="links-staff-dept" id="contactStaffDept">株式会社○○不動産　営業部</div>
-      </div>
+    <!-- 物件情報 -->
+    <div class="links-group">
+      <div class="links-group-title">物件情報</div>
+      <a class="link-item" href="https://suumo.jp" target="_blank" rel="noopener">
+        <div class="link-icon web">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">SUUMO 物件ページ</div>
+          <div class="link-sub">suumo.jp — 詳細情報・口コミ</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+      <a class="link-item" id="gmapLinkBtn" href="#" target="_blank" rel="noopener">
+        <div class="link-icon map">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">Google マップで開く</div>
+          <div class="link-sub" id="gmapLinkSub">東京都港区南青山 — ルート検索</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+      <a class="link-item" href="https://www.homes.co.jp" target="_blank" rel="noopener">
+        <div class="link-icon web">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">LIFULL HOME'S</div>
+          <div class="link-sub">homes.co.jp — 物件詳細ページ</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
     </div>
 
-    <!-- 連絡先 -->
+    <!-- 参考・法令 -->
     <div class="links-group">
-      <div class="links-group-title">連絡先</div>
+      <div class="links-group-title">参考・法令</div>
+      <a class="link-item" href="https://www.mlit.go.jp/jutakukentiku/" target="_blank" rel="noopener">
+        <div class="link-icon doc">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">国土交通省 住宅局</div>
+          <div class="link-sub">不動産・住宅に関する法令情報</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+      <a class="link-item" href="https://www.retio.or.jp/" target="_blank" rel="noopener">
+        <div class="link-icon doc">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="link-body">
+          <div class="link-label">不動産適正取引推進機構</div>
+          <div class="link-sub">RETIO — 取引ガイドライン</div>
+        </div>
+        <div class="link-arr">›</div>
+      </a>
+    </div>
+
+    <!-- 担当者・連絡先（一番下） -->
+    <div class="links-group">
+      <div class="links-group-title">担当者・連絡先</div>
+      <div class="links-staff-card">
+        <div class="links-staff-avatar">👤</div>
+        <div>
+          <div class="links-staff-label">Your Consultant</div>
+          <div class="links-staff-name" id="contactStaffName">担当者未設定</div>
+          <div class="links-staff-dept" id="contactStaffDept">株式会社○○不動産　営業部</div>
+        </div>
+      </div>
       <a class="link-item" id="contactTelBtn" href="tel:0300000000">
         <div class="link-icon tel">
-          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
         </div>
         <div class="link-body">
           <div class="link-label">お電話</div>
@@ -1457,66 +1513,6 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
       </a>
     </div>
 
-    <!-- 物件関連リンク -->
-    <div class="links-group">
-      <div class="links-group-title">物件情報</div>
-      <a class="link-item" href="https://suumo.jp" target="_blank" rel="noopener">
-        <div class="link-icon web">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
-        </div>
-        <div class="link-body">
-          <div class="link-label">SUUMO 物件ページ</div>
-          <div class="link-sub">suumo.jp — 詳細情報・口コミ</div>
-        </div>
-        <div class="link-arr">›</div>
-      </a>
-      <a class="link-item" id="gmapLinkBtn" href="#" target="_blank" rel="noopener">
-        <div class="link-icon map">
-          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        </div>
-        <div class="link-body">
-          <div class="link-label">Google マップ</div>
-          <div class="link-sub">東京都港区南青山 — ルート検索</div>
-        </div>
-        <div class="link-arr">›</div>
-      </a>
-      <a class="link-item" href="https://www.homes.co.jp" target="_blank" rel="noopener">
-        <div class="link-icon web">
-          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </div>
-        <div class="link-body">
-          <div class="link-label">LIFULL HOME'S</div>
-          <div class="link-sub">homes.co.jp — 物件詳細ページ</div>
-        </div>
-        <div class="link-arr">›</div>
-      </a>
-    </div>
-
-    <!-- 参考資料 -->
-    <div class="links-group">
-      <div class="links-group-title">参考・法令</div>
-      <a class="link-item" href="https://www.mlit.go.jp/jutakukentiku/" target="_blank" rel="noopener">
-        <div class="link-icon doc">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        </div>
-        <div class="link-body">
-          <div class="link-label">国土交通省 住宅局</div>
-          <div class="link-sub">不動産・住宅に関する法令情報</div>
-        </div>
-        <div class="link-arr">›</div>
-      </a>
-      <a class="link-item" href="https://www.retio.or.jp/" target="_blank" rel="noopener">
-        <div class="link-icon doc">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        </div>
-        <div class="link-body">
-          <div class="link-label">不動産適正取引推進機構</div>
-          <div class="link-sub">RETIO — 取引ガイドライン</div>
-        </div>
-        <div class="link-arr">›</div>
-      </a>
-    </div>
-
   </div>
   <div style="height:24px;"></div>
 </section>
@@ -1524,27 +1520,44 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
 </main>
 
 <!-- ══ BOTTOM NAV ══ -->
+<!-- ボトムナビ（スクロール対応） -->
 <nav class="bot-nav" id="botNav">
-  <div class="bot-nav-inner">
+  <div class="bot-nav-inner" id="botNavInner">
   <button class="bot-btn on" onclick="go('top')" id="bn-top">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    トップ
+    TOP
   </button>
   <button class="bot-btn" onclick="go('gallery')" id="bn-gallery">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-    ギャラリー
+    写真
+  </button>
+  <button class="bot-btn" onclick="go('map')" id="bn-map">
+    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    地図
   </button>
   <button class="bot-btn" onclick="go('floorplan')" id="bn-floorplan">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 21V9"/></svg>
     間取り
   </button>
+  <button class="bot-btn" onclick="go('price')" id="bn-price">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    価格
+  </button>
+  <button class="bot-btn" onclick="go('video')" id="bn-video">
+    <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    動画
+  </button>
   <button class="bot-btn" onclick="go('docs')" id="bn-docs">
-    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    資料集
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    資料
+  </button>
+  <button class="bot-btn" onclick="go('overview')" id="bn-overview">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    概要
   </button>
   <button class="bot-btn" onclick="go('contact')" id="bn-contact">
     <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-    リンク集
+    リンク
   </button>
   </div>
 </nav>
@@ -1596,17 +1609,25 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
     <div class="loan-section">
       <div class="loan-sec-title">返済条件</div>
       <div class="loan-field">
-        <label class="loan-label">借入期間：<span id="loanYearLabel">35年</span></label>
+        <label class="loan-label">借入期間</label>
+        <div class="loan-input-row" style="margin-bottom:8px;">
+          <input class="loan-input" type="number" id="loanYearDirect" value="35" min="1" max="50" step="1" style="font-size:18px;">
+          <span class="loan-input-unit">年</span>
+        </div>
         <div class="loan-slider-wrap">
-          <input class="loan-slider" type="range" id="loanYear" min="10" max="50" value="35" step="1">
-          <div class="loan-slider-labels"><span>10年</span><span>25年</span><span>35年</span><span>50年</span></div>
+          <input class="loan-slider" type="range" id="loanYear" min="10" max="50" value="35" step="1" style="width:100%;display:block;">
+          <div class="loan-slider-labels" style="display:flex;justify-content:space-between;margin-top:4px;"><span>10年</span><span>20年</span><span>35年</span><span>50年</span></div>
         </div>
       </div>
       <div class="loan-field">
-        <label class="loan-label">金利（年率）：<span id="loanRateLabel">1.50%</span></label>
+        <label class="loan-label">金利（年率）</label>
+        <div class="loan-input-row" style="margin-bottom:8px;">
+          <input class="loan-input" type="number" id="loanRateDirect" value="1.50" min="0.1" max="10.0" step="0.01" style="font-size:18px;">
+          <span class="loan-input-unit">%</span>
+        </div>
         <div class="loan-slider-wrap">
-          <input class="loan-slider" type="range" id="loanRate" min="0.1" max="5.0" value="1.5" step="0.05">
-          <div class="loan-slider-labels"><span>0.1%</span><span>変動</span><span>固定</span><span>5.0%</span></div>
+          <input class="loan-slider" type="range" id="loanRate" min="0.1" max="5.0" value="1.5" step="0.05" style="width:100%;display:block;">
+          <div class="loan-slider-labels" style="display:flex;justify-content:space-between;margin-top:4px;"><span>0.1%</span><span>変動</span><span>固定</span><span>5.0%</span></div>
         </div>
       </div>
     </div>
@@ -1886,6 +1907,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
       <div style="font-size:11px;color:var(--gray);margin-bottom:14px;letter-spacing:.05em;">URL生成タブで設定したURLのQRコードを生成します。</div>
       <div class="adm-qr-wrap">
         <canvas id="qrCanvas" width="200" height="200"></canvas>
+        <img id="qrImgFallback" style="display:none;width:200px;height:200px;border-radius:4px;" alt="QRコード">
         <div style="font-size:10px;color:var(--gray);text-align:center;letter-spacing:.06em;" id="qrStatus">URL生成タブで設定後、QR生成ボタンを押してください</div>
       </div>
       <div style="margin-top:14px;"><button class="adm-btn" onclick="downloadQR()">QR画像をダウンロード</button></div>
@@ -1961,7 +1983,7 @@ var VIDEOS=[
 ];
 function R(x,y,w,h,l,s,f){f=f||'#E8E6DF';var m='';if(h>35){m='<text x="'+(x+w/2)+'" y="'+(y+h/2-7)+'" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#333" font-weight="500">'+l+'</text>';if(s)m+='<text x="'+(x+w/2)+'" y="'+(y+h/2+9)+'" text-anchor="middle" font-size="8" fill="#777">'+s+'</text>';}else{m='<text x="'+(x+w/2)+'" y="'+(y+h/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#333">'+l+'</text>';}return'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+f+'" stroke="#999" stroke-width="1.2"/>'+m;}
 function B(x,y,w,h,l){return'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="#DDCFAF" fill-opacity=".5" stroke="#C8B89A" stroke-width="1"/><text x="'+(x+w/2)+'" y="'+(y+h/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#7A5F35">'+l+'</text>';}
-function SVG(vw,vh,b){return'<svg viewBox="0 0 '+vw+' '+vh+'" xmlns="http://www.w3.org/2000/svg"><rect width="'+vw+'" height="'+vh+'" fill="#F5F4EE"/>'+b+'</svg>';}
+function SVG(vw,vh,b){return'<svg viewBox="0 0 '+vw+' '+vh+'" xmlns="http://www.w3.org/2000/svg"><rect width="'+vw+'" height="'+vh+'" fill="#F8F6F0"/>'+b+'</svg>';}
 // ─── 資料URL（GASの資料リストシートから動的に更新される）
 var DOC_URLS = {};
 
@@ -2112,7 +2134,12 @@ function applyUnitData(rows) {
       balc:   String(r['バルコニー'] || ''),
       price:  String(r['価格（万円）'] || '0'),
       mgmt:   String(r['管理費'] || '0'),
-      status: String(r['状況'] || 'avail'),
+      status: (function(s){
+        var m={'販売中':'avail','空き':'avail','〇':'avail','○':'avail',
+               '予約中':'reserved','商談中':'reserved','△':'reserved',
+               '成約済':'sold','成約':'sold','×':'sold','売約済':'sold','売却済':'sold'};
+        return m[String(s||'').trim()]||String(s||'avail');
+      })(r['状況']),
     });
   });
   // FP（間取りタイプ別に管理費等を集計してデフォルト更新）
@@ -2317,15 +2344,22 @@ function go(name){
 function initMap(){
   mapInited=true;
   var encAddr=encodeURIComponent(PROPERTY_ADDRESS);
-  // Google Maps Embed place（ピン表示）
+  // Google Maps Embed（ピン表示）
   var frame=document.getElementById('gmapFrame');
   if(frame){
-    frame.src='https://maps.google.com/maps?q='+encAddr+'&hl=ja&z=16&output=embed';
+    frame.src='https://maps.google.com/maps?q='+encAddr+'&hl=ja&z=16&output=embed&iwloc=near';
   }
+  // 地図セクション内「Google マップで開く」ボタン
+  var openBtn=document.getElementById('gmapOpenBtn');
+  if(openBtn){
+    openBtn.href='https://maps.google.com/?q='+encAddr;
+  }
+  // リンク集内「Google マップ」リンク
   var linkBtn=document.getElementById('gmapLinkBtn');
   if(linkBtn){
     linkBtn.href='https://maps.google.com/?q='+encAddr;
-    linkBtn.textContent='Google マップで開く →';
+    var sub=document.getElementById('gmapLinkSub');
+    if(sub)sub.textContent=PROPERTY_ADDRESS+' — ルート検索';
   }
   // 周辺スポットリスト
   var spotsEl=document.getElementById('mapSpots');
@@ -2910,7 +2944,12 @@ function parseCsv(text){
       mgmt:   cols[6]||'0',
       repair: cols[7]||'0',
       parking:cols[8]||'0',
-      status: cols[9]||'avail',
+      status: (function(s){
+        var m={'販売中':'avail','空き':'avail','〇':'avail','○':'avail',
+               '予約中':'reserved','商談中':'reserved','△':'reserved',
+               '成約済':'sold','成約':'sold','×':'sold','売約済':'sold'};
+        return m[(s||'').trim()]||(s||'avail');
+      })(cols[9]),
     });
   }
   if(rows.length===0){alert('有効なデータが見つかりません。');return;}
@@ -3030,8 +3069,10 @@ function fmtMan(n){return (n/10000).toFixed(1);}  // 円→万円
 
 function calcLoan(){
   var P=parseInt(document.getElementById('loanAmount').value)||0;  // 万円
-  var years=parseInt(document.getElementById('loanYear').value)||35;
-  var rate=parseFloat(document.getElementById('loanRate').value)||1.5;
+  var yrDEl=document.getElementById('loanYearDirect');
+  var years=yrDEl?parseInt(yrDEl.value)||35:parseInt(document.getElementById('loanYear').value)||35;
+  var rtDEl=document.getElementById('loanRateDirect');
+  var rate=rtDEl?parseFloat(rtDEl.value)||1.5:parseFloat(document.getElementById('loanRate').value)||1.5;
   var bonusPer=bonusOn?(parseInt(document.getElementById('loanBonus').value)||0):0;
   var bonusTimes=bonusOn?(parseInt(document.getElementById('loanBonusTimes').value)||2):0;
 
@@ -3242,7 +3283,7 @@ function resetPlans(){
 }
 
 // ─── 管理パスワード（変更する場合はここを編集）
-var ADMIN_PASSWORD = '1234';
+var ADMIN_PASSWORD = 'alpha';
 var adminUnlocked = false;
 
 function toggleAdmin(){
@@ -3425,7 +3466,7 @@ function genQR(){
     ctx.fillText('QR生成にはネット接続が必要です',100,105);
     document.getElementById('qrStatus').textContent='オフライン環境ではURLをそのままコピーしてください';
   };
-  img.src='https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl='+encodeURIComponent(url)+'&choe=UTF-8';
+  img.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(url)+'&format=png&bgcolor=1A2332&color=EEF4FA';
 }
 
 function downloadQR(){
@@ -3459,15 +3500,26 @@ window.addEventListener('DOMContentLoaded',function(){
   document.getElementById('loanAmount').addEventListener('input',calcLoan);
   // スライダー
   var yr=document.getElementById('loanYear');
+  var yrD=document.getElementById('loanYearDirect');
   if(yr){yr.addEventListener('input',function(){
-    var el=document.getElementById('loanYearLabel');
-    if(el)el.textContent=this.value+'年';
+    if(yrD)yrD.value=this.value;
+    calcLoan();
+  });}
+  if(yrD){yrD.addEventListener('input',function(){
+    var v=Math.min(50,Math.max(1,parseInt(this.value)||35));
+    this.value=v;
+    if(yr){yr.value=Math.min(50,Math.max(10,v));}
     calcLoan();
   });}
   var rt=document.getElementById('loanRate');
+  var rtD=document.getElementById('loanRateDirect');
   if(rt){rt.addEventListener('input',function(){
-    var el=document.getElementById('loanRateLabel');
-    if(el)el.textContent=parseFloat(this.value).toFixed(2)+'%';
+    if(rtD)rtD.value=parseFloat(this.value).toFixed(2);
+    calcLoan();
+  });}
+  if(rtD){rtD.addEventListener('input',function(){
+    var v=Math.min(10,Math.max(0.01,parseFloat(this.value)||1.5));
+    if(rt){rt.value=Math.min(5,Math.max(0.1,v));}
     calcLoan();
   });}
   // ボーナス・管理費
