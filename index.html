@@ -1371,15 +1371,15 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
     <div class="ov-icon"><div class="ov-icon-em">🚗</div><div class="ov-icon-lbl">機械式<br>駐車場</div></div>
   </div>
   <div style="padding:0 20px;"><table class="ov-tbl">
-    <tr><td>物件名</td><td>ザ・グランドレジデンス南青山</td></tr>
-    <tr><td>所在地</td><td>東京都港区南青山○丁目○番○号</td></tr>
-    <tr><td>交通</td><td>東京メトロ銀座線「表参道」駅 徒歩4分<br>東京メトロ半蔵門線「表参道」駅 徒歩4分</td></tr>
-    <tr><td>総戸数</td><td>48戸</td></tr>
-    <tr><td>構造・規模</td><td>鉄筋コンクリート造 地上20階建</td></tr>
-    <tr><td>専有面積</td><td>62.50㎡〜142.30㎡</td></tr>
-    <tr><td>竣工予定</td><td>2026年12月下旬（予定）</td></tr>
-    <tr><td>入居予定</td><td>2027年2月下旬（予定）</td></tr>
-    <tr><td>売主</td><td>株式会社○○デベロップメント</td></tr>
+    <tr><td>物件名</td><td id="d-prop-name">ザ・グランドレジデンス南青山</td></tr>
+    <tr><td>所在地</td><td id="d-prop-addr">東京都港区南青山○丁目○番○号</td></tr>
+    <tr><td>交通</td><td id="d-prop-station">東京メトロ銀座線「表参道」駅 徒歩4分<br>東京メトロ半蔵門線「表参道」駅 徒歩4分</td></tr>
+    <tr><td>総戸数</td><td id="d-prop-units">48戸</td></tr>
+    <tr><td>構造・規模</td><td id="d-prop-structure">鉄筋コンクリート造 地上20階建</td></tr>
+    <tr><td>専有面積</td><td id="d-prop-area">62.50㎡〜142.30㎡</td></tr>
+    <tr><td>竣工予定</td><td id="d-prop-completion">2026年12月下旬（予定）</td></tr>
+    <tr><td>入居予定</td><td id="d-prop-movein">2027年2月下旬（予定）</td></tr>
+    <tr><td>売主</td><td id="d-prop-seller">株式会社○○デベロップメント</td></tr>
     <tr><td>施工</td><td>○○建設株式会社</td></tr>
     <tr><td>管理会社</td><td>株式会社○○コミュニティ</td></tr>
   </table></div>
@@ -1962,6 +1962,9 @@ var VIDEOS=[
 function R(x,y,w,h,l,s,f){f=f||'#E8E6DF';var m='';if(h>35){m='<text x="'+(x+w/2)+'" y="'+(y+h/2-7)+'" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#333" font-weight="500">'+l+'</text>';if(s)m+='<text x="'+(x+w/2)+'" y="'+(y+h/2+9)+'" text-anchor="middle" font-size="8" fill="#777">'+s+'</text>';}else{m='<text x="'+(x+w/2)+'" y="'+(y+h/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#333">'+l+'</text>';}return'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+f+'" stroke="#999" stroke-width="1.2"/>'+m;}
 function B(x,y,w,h,l){return'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="#DDCFAF" fill-opacity=".5" stroke="#C8B89A" stroke-width="1"/><text x="'+(x+w/2)+'" y="'+(y+h/2)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#7A5F35">'+l+'</text>';}
 function SVG(vw,vh,b){return'<svg viewBox="0 0 '+vw+' '+vh+'" xmlns="http://www.w3.org/2000/svg"><rect width="'+vw+'" height="'+vh+'" fill="#F5F4EE"/>'+b+'</svg>';}
+// ─── 資料URL（GASの資料リストシートから動的に更新される）
+var DOC_URLS = {};
+
 var FP_DEFAULT=[
   {type:'3LDK',tag:'POPULAR',area:'92.40',floor:'5〜12階',price:'18,500万円〜',priceNum:18500,
    fees:{mgmt:27500,repair:12000,parking:35000,other:0},
@@ -2009,10 +2012,173 @@ function loadFP(){
   return FP_DEFAULT.map(function(d){return Object.assign({},d);});
 }
 var FP=loadFP();
-// ─── 物件所在地（マップ・リンクに使用。実際の住所に変更してください）
+// ─── Google Apps Script API URL
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbyQkmZXhMXHduQJ0gwVV6UyfBJl8Rltv-OaHyQ1jlnDOUAswoOAFEOJiFL-cXOJRmyl-Q/exec';
+
+// ─── 物件所在地（GASから取得するまでのデフォルト値）
 var PROPERTY_ADDRESS = '東京都港区南青山';
-var PROPERTY_LAT  = 35.6654;  // 緯度（実際の座標に変更）
-var PROPERTY_LNG  = 139.7134; // 経度
+var PROPERTY_LAT  = 35.6654;
+var PROPERTY_LNG  = 139.7134;
+
+// ─── GASからデータを取得する汎用関数
+function fetchGAS(sheetName, callback) {
+  var url = GAS_URL + '?sheet=' + encodeURIComponent(sheetName);
+  fetch(url)
+    .then(function(res) { return res.json(); })
+    .then(function(data) { callback(null, data); })
+    .catch(function(err) { callback(err, null); });
+}
+
+// ─── 全データを起動時に取得して反映
+function loadAllFromGAS() {
+  // ── 物件情報
+  fetchGAS('物件情報', function(err, data) {
+    if (err || !data) return;
+    // マップ住所を更新
+    if (data['マップ住所']) PROPERTY_ADDRESS = data['マップ住所'];
+    // 物件概要テーブルを更新
+    applyPropertyInfo(data);
+  });
+
+  // ── 住戸データ
+  fetchGAS('住戸データ', function(err, data) {
+    if (err || !data || !Array.isArray(data)) return;
+    applyUnitData(data);
+  });
+
+  // ── 担当者
+  fetchGAS('担当者', function(err, data) {
+    if (err || !data) return;
+    applyStaffData(data);
+  });
+
+  // ── 資料リスト
+  fetchGAS('資料リスト', function(err, data) {
+    if (err || !data || !Array.isArray(data)) return;
+    applyDocsData(data);
+  });
+}
+
+// ─── 物件情報をDOMに反映
+function applyPropertyInfo(d) {
+  // 物件概要テーブルの各行をキーで検索して更新
+  var map = {
+    '物件名':    'd-prop-name',
+    '所在地':    'd-prop-addr',
+    '最寄り駅':  'd-prop-station',
+    '総戸数':    'd-prop-units',
+    '構造・規模':'d-prop-structure',
+    '竣工予定':  'd-prop-completion',
+    '入居予定':  'd-prop-movein',
+    '売主':      'd-prop-seller',
+  };
+  Object.keys(map).forEach(function(key) {
+    var el = document.getElementById(map[key]);
+    if (el && d[key]) el.textContent = d[key];
+  });
+  // ヒーローの住所
+  var addrEl = document.querySelector('.hero-addr');
+  if (addrEl && d['所在地']) addrEl.textContent = d['所在地'];
+  // 専有面積
+  var areaEl = document.getElementById('d-prop-area');
+  if (areaEl && d['専有面積_最小'] && d['専有面積_最大']) {
+    areaEl.textContent = d['専有面積_最小'] + '㎡〜' + d['専有面積_最大'] + '㎡';
+  }
+  // マップ・電話・営業時間
+  if (d['マップ住所']) PROPERTY_ADDRESS = d['マップ住所'];
+  if (d['電話番号']) {
+    var telEls = document.querySelectorAll('[data-tel]');
+    telEls.forEach(function(el) { el.textContent = d['電話番号']; el.href = 'tel:' + d['電話番号'].replace(/-/g,''); });
+    var telSub = document.getElementById('contactTelSub');
+    if (telSub) telSub.textContent = d['電話番号'] + '　' + (d['営業時間'] || '');
+  }
+  // ヒーロー統計（総戸数）
+  var unitsEl = document.querySelector('.hs-num');
+  if (unitsEl && d['総戸数']) unitsEl.textContent = d['総戸数'];
+}
+
+// ─── 住戸データをPRICE_DATAとFPに反映
+function applyUnitData(rows) {
+  if (!rows.length) return;
+  // PRICE_DATA更新
+  PRICE_DATA.length = 0;
+  rows.forEach(function(r) {
+    if (!r['部屋番号']) return;
+    PRICE_DATA.push({
+      no:     String(r['部屋番号']),
+      floor:  parseInt(r['階']) || 0,
+      type:   String(r['タイプ'] || ''),
+      area:   String(r['専有面積'] || ''),
+      balc:   String(r['バルコニー'] || ''),
+      price:  String(r['価格（万円）'] || '0'),
+      mgmt:   String(r['管理費'] || '0'),
+      status: String(r['状況'] || 'avail'),
+    });
+  });
+  // FP（間取りタイプ別に管理費等を集計してデフォルト更新）
+  var typeMap = {};
+  rows.forEach(function(r) {
+    var t = r['タイプ'];
+    if (!t || typeMap[t]) return;
+    typeMap[t] = {
+      mgmt:    parseInt(r['管理費']) || 0,
+      repair:  parseInt(r['修繕積立金']) || 0,
+      parking: parseInt(r['駐車場']) || 0,
+      other:   parseInt(r['その他']) || 0,
+    };
+  });
+  FP.forEach(function(p) {
+    if (typeMap[p.type]) p.fees = typeMap[p.type];
+  });
+  // 再描画
+  renderStatusTable();
+  renderPrice();
+  renderFP();
+}
+
+// ─── 担当者情報を反映
+function applyStaffData(d) {
+  if (d['担当者名']) {
+    var els = document.querySelectorAll('[data-staff-name]');
+    els.forEach(function(el) { el.textContent = d['担当者名']; });
+    document.getElementById('contactStaffName') && (document.getElementById('contactStaffName').textContent = d['担当者名']);
+  }
+  if (d['部署']) {
+    document.getElementById('contactStaffDept') && (document.getElementById('contactStaffDept').textContent = d['部署']);
+  }
+  if (d['電話番号']) {
+    var btn = document.getElementById('contactTelBtn');
+    if (btn) { btn.href = 'tel:' + d['電話番号'].replace(/-/g,''); }
+  }
+  if (d['メール']) {
+    var mailBtn = document.getElementById('contactMailBtn');
+    if (mailBtn) mailBtn.href = 'mailto:' + d['メール'] + '?subject=グランドレジデンス　お問い合わせ';
+  }
+}
+
+// ─── 資料リストを反映
+function applyDocsData(rows) {
+  if (!rows.length) return;
+  // ALL_DOCSを更新
+  ALL_DOCS.length = 0;
+  rows.forEach(function(r) {
+    if (!r['資料ID']) return;
+    ALL_DOCS.push({
+      id:   String(r['資料ID']),
+      name: String(r['資料名'] || ''),
+      cat:  String(r['カテゴリ'] || ''),
+      icon: '📄',
+      cls:  String(r['資料ID']).endsWith('.zip') ? 'zip' : 'pdf',
+      meta: '',
+      tag:  String(r['タグ'] || ''),
+      url:  String(r['ファイルURL'] || ''),
+    });
+    // DOC_URLSも更新
+    DOC_URLS[String(r['資料ID'])] = String(r['ファイルURL'] || '');
+  });
+  // 資料セクション再描画
+  renderDocs();
+}
 
 var PRICE_DATA=[
   // 1F
@@ -2298,22 +2464,12 @@ function renderDocs(){
 }
 
 function dlDoc(id){
-  // GitHub Pages: /docs/{id}.pdf に配置する想定
-  // 各資料のURLマッピング
-  var DOC_URLS={
-    'overview_v1':   'docs/overview_v1.pdf',
-    'floorplan_all': 'docs/floorplan_all.pdf',
-    'floorplan_3ldk':'docs/floorplan_3ldk.pdf',
-    'floorplan_4ldk':'docs/floorplan_4ldk.pdf',
-    'price_p1':      'docs/price_p1.pdf',
-    'spec_v1':       'docs/spec_v1.pdf',
-    'location_map':  'docs/location_map.pdf',
-    'prs_image':     'docs/prs_image.zip',
-    'movie_promo':   'docs/movie_promo.mp4',
-  };
-  var url=DOC_URLS[id];
-  if(url){window.open(url,'_blank');}
-  else{alert('「'+id+'」\n\nファイルをGitHubリポジトリの /docs/ フォルダにアップロードしてください。');}
+  var url = DOC_URLS[id];
+  if (url && url !== '') {
+    window.open(url, '_blank');
+  } else {
+    alert('「' + id + '」\n\n資料URLが設定されていません。\nGoogleスプレッドシートの「資料リスト」シートにURLを登録してください。');
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -3320,6 +3476,8 @@ window.addEventListener('DOMContentLoaded',function(){
     if(el)el.addEventListener('input',calcLoan);
   });
   renderGal();renderVids();renderFP();renderPrice();renderStatusTable();
+  // GASからデータを取得（非同期・バックグラウンド）
+  loadAllFromGAS();
   applyPersonalization();
 });
 </script>
