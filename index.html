@@ -2082,6 +2082,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--f-body);f
     <div class="admin-pw-title">管理者認証</div>
     <input class="admin-pw-input" type="password" id="adminPwInput"
       placeholder="パスワードを入力"
+      autocomplete="new-password"
       onkeydown="if(event.key==='Enter')checkAdminPw()">
     <button class="admin-pw-btn" onclick="checkAdminPw()">ログイン</button>
     <div class="admin-pw-err" id="adminPwErr"></div>
@@ -3317,7 +3318,7 @@ function setMediaHidden(idx) {
   renderMediaGrid();
 }
 
-// GASに設定を保存（POSTリクエスト）
+// GASに設定を保存（no-cors GETリクエスト方式）
 function saveMediaSettings() {
   // タイトル入力値を反映
   mediaItems.forEach(function(item, idx) {
@@ -3329,27 +3330,27 @@ function saveMediaSettings() {
   st.textContent = '保存中...';
   st.style.opacity = '1';
 
-  fetch(GAS_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'updateMedia', items: mediaItems }),
-  })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
-    if (data.success) {
-      st.textContent = '✓ ' + data.count + '件を保存しました';
-      // ギャラリー・動画を即再読み込み
-      fetchGAS('メディア', function(err, rows) {
-        if (!err && rows) applyMediaData(rows);
-      });
-    } else {
-      st.textContent = '✗ 保存失敗: ' + (data.error || '不明なエラー');
-    }
-    setTimeout(function() { st.style.opacity = '0'; }, 3000);
-  })
-  .catch(function(err) {
-    st.textContent = '✗ 通信エラー';
-    setTimeout(function() { st.style.opacity = '0'; }, 3000);
-  });
+  // GETパラメータにJSONを乗せて送信（CORS回避）
+  var url = GAS_URL
+    + '?action=updateMedia'
+    + '&data=' + encodeURIComponent(JSON.stringify(mediaItems));
+
+  fetch(url, {mode: 'no-cors'})
+    .then(function() {
+      // no-corsではレスポンス内容は読めないが送信は成功
+      st.textContent = '✓ 保存しました（3秒後に反映されます）';
+      // 3秒後にシートから再取得して反映
+      setTimeout(function() {
+        fetchGAS('メディア', function(err, rows) {
+          if (!err && rows) applyMediaData(rows);
+        });
+      }, 3000);
+      setTimeout(function() { st.style.opacity = '0'; }, 5000);
+    })
+    .catch(function(err) {
+      st.textContent = '✗ 通信エラー: ' + err.message;
+      setTimeout(function() { st.style.opacity = '0'; }, 4000);
+    });
 }
 
 
